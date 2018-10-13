@@ -1,0 +1,26 @@
+{
+    "name": "webauthn-ui",
+    "version": "0.0.1",
+    "description": "WebAuthn helper module",
+    "main": "dist/es/webauthn-ui.umd.js",
+    "module": "dist/es/webauthn-ui.esm.js",
+    "typings": "src/index.d.ts",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "rollup -c rollup.config.js",
+        "build:prod": "rollup -c rollup.config.js --environment NODE_ENV:production",
+        "prepublishOnly": "npm run build:prod"
+    },
+    "keywords": [
+        "WebAuthn"
+    ],
+    "author": "Thomas Bleeker (http://www.madwizard.org)",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/webappsec-credential-management": "^0.3.6",
+        "rollup": "^0.61.2",
+        "rollup-plugin-typescript": "^1.0.0",
+        "tslib": "^1.9.3",
+        "typescript": "^2.9.2"
+    }
+}
