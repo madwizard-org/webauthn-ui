@@ -10,7 +10,7 @@
         ],
         "sourceMap": true,
         "moduleResolution": "node",
-        "declaration": true,
+        "declaration": true
     },
     "files": [
         "src/index.ts"
