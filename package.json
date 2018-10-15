@@ -2,7 +2,7 @@
     "name": "webauthn-ui",
     "version": "0.0.1",
     "description": "WebAuthn helper module",
-    "main": "dist/es/webauthn-ui.umd.js",
+    "main": "dist/umd/webauthn-ui.umd.js",
     "module": "dist/es/webauthn-ui.esm.js",
     "typings": "src/index.d.ts",
     "scripts": {
