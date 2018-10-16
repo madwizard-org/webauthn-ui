@@ -6,6 +6,16 @@ const devMode = (env === 'development');
 
 const banner = "/*!\n\n webauthn-ui library (C) 2018 Thomas Bleeker (www.madwizard.org) - MIT license \n\n*/\n";
 
+function cleanup() {
+    return {
+        name: 'cleanup',
+        renderChunk(code) {
+            code = code.replace(/\r\n/g, "\n");
+            return {code, map:null};
+        }
+    }
+}
+
 let builds =
     [
         {
@@ -17,7 +27,7 @@ let builds =
                 banner: banner,
                 sourcemap: devMode,
             },
-            plugins: [typescript()]
+            plugins: [typescript(), cleanup()]
         },
         {
             input: './src/index.ts',
@@ -44,7 +54,7 @@ if (!devMode) {
                     sourcemap: devMode,
 
                 },
-                plugins: [typescript(), terser({sourcemap: devMode})]
+                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /^!/}})]
             },
             {
                 input: './src/index.ts',
@@ -54,7 +64,7 @@ if (!devMode) {
                     banner: banner,
                     sourcemap: devMode,
                 },
-                plugins: [typescript(), terser({sourcemap: devMode})]
+                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /^!/}})]
             }
 
         ]
