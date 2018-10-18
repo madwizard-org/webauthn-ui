@@ -17,7 +17,7 @@
     "author": "Thomas Bleeker (http://www.madwizard.org)",
     "license": "MIT",
     "dependencies": {
-        "@types/webappsec-credential-management": "^0.3.6"
+        "@types/webappsec-credential-management": "^0.3.7"
     },
     "devDependencies": {
         "rollup": "^0.66.6",

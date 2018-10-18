@@ -8,9 +8,7 @@ export function ready<T>(value?): Promise<T> {
             };
             document.addEventListener('DOMContentLoaded', readyFunc);
         } else {
-            setTimeout(() => { // TODO: REMOVE
-                resolve(value);
-            }, 600);
+            resolve(value);
         }
     });
 };

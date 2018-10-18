@@ -34,7 +34,7 @@ class WebAuthnUI
         return this.supported;
     }
 
-    public async start() : Promise<JsonAuthenticatorResponse>
+    public async start() : Promise<PublicKeyCredential>
     {
         let c = this.config;
         try {
@@ -44,7 +44,6 @@ class WebAuthnUI
             }
 
             let credential: PublicKeyCredential;
-            let response: JsonAuthenticatorResponse;
             let credentialJson : JsonPublicKeyCredential;
 
             if (c.type === 'create') {
@@ -66,11 +65,10 @@ class WebAuthnUI
 
             if (c.formField !== undefined) {
                 this.postForm(
-
                     credentialJson
                 );
             }
-            return response;
+            return credential;
         }
         catch(e)
         {
@@ -92,7 +90,7 @@ class WebAuthnUI
 
         element.value = JSON.stringify(data);
         if (element.form) {
-          // element.form.submit();
+            element.form.submit();
         }
     }
 
@@ -113,6 +111,15 @@ class WebAuthnUI
         }
     }
 }
-WebAuthnUI.registerOnReady().catch((e) => {if(console && console.error()) {console.error(e);}});
+
+WebAuthnUI
+    .registerOnReady()
+    .catch(
+        (e) => {
+            if(console && console.error()) {
+                console.error(e);
+            }
+        }
+    );
 
 export default WebAuthnUI;

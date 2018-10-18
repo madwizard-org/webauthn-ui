@@ -121,8 +121,7 @@ export class Converter
     public static convertRequestOptions(options : JsonPublicKeyCredentialRequestOptions ) : PublicKeyCredentialRequestOptions
     {
         let output : PublicKeyCredentialRequestOptions = {
-            challenge: base64.decode(options.challenge),
-            timeout: undefined, // TODO!! BUG IN types
+            challenge: base64.decode(options.challenge)
         };
 
         if (options.timeout !== undefined) {

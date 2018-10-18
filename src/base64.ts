@@ -14,7 +14,6 @@ export function encode(arraybuffer: ArrayBuffer) {
     encoded = encoded.substr(0, i + 1);
     encoded = encoded.replace(/\+/g, '-').replace(/\//g, '_');
 
-
     return encoded;
 }
 
