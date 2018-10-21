@@ -8,6 +8,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "rollup -c rollup.config.js --environment NODE_ENV:development",
+        "watch": "rollup -c rollup.config.js --environment NODE_ENV:development -w",
         "build:prod": "rollup -c rollup.config.js --environment NODE_ENV:production",
         "prepublishOnly": "npm run build:prod"
     },

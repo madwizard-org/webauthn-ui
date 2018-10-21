@@ -65,7 +65,7 @@ class WebAuthnUI
 
             if (c.formField !== undefined) {
                 this.postForm(
-                    credentialJson
+                    {'status':'ok', ...credentialJson}
                 );
             }
             return credential;
@@ -73,7 +73,12 @@ class WebAuthnUI
         catch(e)
         {
             if (c.formField !== undefined) {
-                this.postForm({'success' : false, 'errorType' : 'js', 'error' : (e instanceof Error ? e.message : String(e))});
+                let data : any = {'status' : 'failed', 'errorMessage' : (e instanceof Error ? e.message : String(e))};
+
+                if (e instanceof DOMException) {
+                    data.errorName = e.name;
+                }
+                this.postForm(data);
 
             } else {
                 throw e;
