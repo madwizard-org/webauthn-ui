@@ -73,7 +73,7 @@ class WebAuthnUI
         catch(e)
         {
             if (c.formField !== undefined) {
-                let data : any = {'status' : 'failed', 'errorMessage' : (e instanceof Error ? e.message : String(e))};
+                let data : any = {'status' : 'failed'};
 
                 if (e instanceof DOMException) {
                     data.errorName = e.name;
