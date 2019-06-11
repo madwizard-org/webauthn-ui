@@ -5,6 +5,7 @@ export interface WebAuthnUIConfig
     formField?: string,
     type: 'create' | 'get';
     request : JsonPublicKeyCredentialCreationOptions|JsonPublicKeyCredentialRequestOptions;
+    postUnsupported?: boolean;
 }
 
 
@@ -86,6 +87,18 @@ export interface JsonPublicKeyCredentialCreationOptions {
 
 export class Converter
 {
+
+    private static copyProps<T>(dest : any, src : T, names: (keyof T)[])
+    {
+        let k: keyof T;
+
+        for (k of names) {
+            if (src[k] !== undefined) {
+                dest[k] = src[k];
+            }
+        }
+    }
+
     public static convertCreationOptions(options : JsonPublicKeyCredentialCreationOptions ) : PublicKeyCredentialCreationOptions
     {
         let output : PublicKeyCredentialCreationOptions = {
@@ -95,26 +108,12 @@ export class Converter
             pubKeyCredParams : options.pubKeyCredParams,
         };
 
-        if (options.timeout !== undefined) {
-            output.timeout = options.timeout;
-        }
+        this.copyProps(output, options, ['timeout', 'authenticatorSelection', 'attestation', 'excludeCredentials']);
 
-        if (options.authenticatorSelection !== undefined) {
-            output.authenticatorSelection = options.authenticatorSelection;
-        }
-
-        if (options.attestation !== undefined) {
-            output.attestation = options.attestation;
-        }
         // TODO options.extensions
         if (options.extensions) {
             throw new Error("Extensions not supported yet.");
         }
-
-        if (options.excludeCredentials !== undefined) {
-            output.excludeCredentials = Converter.convertCredentialDescriptors(options.excludeCredentials);
-        }
-
         return output;
     }
 
@@ -124,20 +123,10 @@ export class Converter
             challenge: base64.decode(options.challenge)
         };
 
-        if (options.timeout !== undefined) {
-            output.timeout = options.timeout;
-        }
-
-        if (options.rpId !== undefined) {
-            output.rpId = options.rpId;
-        }
+        this.copyProps(output, options, ['timeout', 'rpId', 'userVerification']);
 
         if (options.allowCredentials !== undefined) {
             output.allowCredentials = this.convertCredentialDescriptors(options.allowCredentials);
-        }
-
-        if (options.userVerification !== undefined) {
-            output.userVerification = options.userVerification;
         }
 
         // TODO options.extensions
@@ -215,4 +204,8 @@ export class Converter
         }
         return desc;
     }
+}
+
+export class WebAuthnError extends Error
+{
 }

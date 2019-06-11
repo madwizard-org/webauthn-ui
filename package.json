@@ -2,8 +2,8 @@
     "name": "webauthn-ui",
     "version": "0.1.0",
     "description": "WebAuthn helper module",
-    "main": "dist/umd/webauthn-ui.umd.js",
-    "module": "dist/es/webauthn-ui.esm.js",
+    "main": "dist/umd/webauthn-ui.js",
+    "module": "dist/es/webauthn-ui.js",
     "typings": "src/index.d.ts",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",

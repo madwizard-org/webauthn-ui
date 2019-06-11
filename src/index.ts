@@ -12,7 +12,8 @@ import {
     JsonAuthenticatorResponse,
     JsonPublicKeyCredential,
     JsonPublicKeyCredentialCreationOptions,
-    JsonPublicKeyCredentialRequestOptions,
+    JsonPublicKeyCredentialRequestOptions, 
+    WebAuthnError,
     WebAuthnUIConfig
 } from "./types";
 
@@ -23,7 +24,12 @@ class WebAuthnUI
 
     constructor(config : WebAuthnUIConfig)
     {
-        this.config = config;
+        this.config = Object.assign(
+            {
+                postUnsupported: false,
+            },
+            config
+        );
     }
 
     public static isSupported() : boolean
@@ -39,8 +45,12 @@ class WebAuthnUI
         let c = this.config;
         try {
             await ready();
+
+            if (!WebAuthnUI.isSupported() && c.postUnsupported) {
+                throw new WebAuthnError("unsupported");
+            }  // TODO: else
             if (c.request === undefined) {
-                throw new Error("Missing request parameter");
+                throw new WebAuthnError("badrequest");
             }
 
             let credential: PublicKeyCredential;
@@ -60,25 +70,27 @@ class WebAuthnUI
                 credential = <PublicKeyCredential>await navigator.credentials.get(request);
                 credentialJson = Converter.convertAssertionPublicKeyCredential(credential);
             } else {
-                throw new Error("Unsupported type");
+                throw new WebAuthnError("badrequest");
             }
 
             if (c.formField !== undefined) {
-                this.postForm(
-                    {'status':'ok', ...credentialJson}
-                );
+                let postData : any = {'status' : 'ok',  ...credentialJson};
+                this.postForm(postData);
             }
             return credential;
         }
         catch(e)
         {
             if (c.formField !== undefined) {
-                let data : any = {'status' : 'failed'};
+                let postData : any = {'status' : 'failed'};
 
                 if (e instanceof DOMException) {
-                    data.errorName = e.name;
+                    postData.errorName = e.name;
                 }
-                this.postForm(data);
+                if (e instanceof WebAuthnError) {
+                    postData.errorName = e.message;
+                }
+                this.postForm(postData);
 
             } else {
                 throw e;
@@ -121,7 +133,7 @@ WebAuthnUI
     .registerOnReady()
     .catch(
         (e) => {
-            if(console && console.error()) {
+            if(console && console.error) {
                 console.error(e);
             }
         }
