@@ -4,7 +4,7 @@ import typescript from 'rollup-plugin-typescript';
 const env = process.env.NODE_ENV;
 const devMode = (env === 'development');
 
-const banner = "/*!\n\n webauthn-ui library (C) 2018 Thomas Bleeker (www.madwizard.org) - MIT license \n\n*/\n";
+const banner = `/*! webauthn-ui library (C) 2018 - ${new Date().getFullYear()} Thomas Bleeker (www.madwizard.org) - MIT license */\n`;
 
 function cleanup() {
     return {
@@ -54,17 +54,17 @@ if (!devMode) {
                     sourcemap: devMode,
 
                 },
-                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /^!/}})]
+                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /webauthn-ui/}})]
             },
             {
                 input: './src/index.ts',
                 output: {
-                    file: 'dist/es/webauthn-ui.mjs',
+                    file: 'dist/es/webauthn-ui.min.js',
                     format: 'es',
                     banner: banner,
                     sourcemap: devMode,
                 },
-                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /^!/}})]
+                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /webauthn-ui/}})]
             }
 
         ]
