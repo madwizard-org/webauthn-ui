@@ -17,7 +17,7 @@ This library will keep the types supported in JSON the same. ArrayBuffers are co
 
 Install the module with `npm install webauthn-ui`.
 
-The library is available as ES and UMD modules. Both libraries are ES5 compatible. Although all browsers that support WebAuthn support ES modules as well, it is still useful to support ES5 browsers for graceful handling in case WebAuthn is not supported.
+The library is available as ES and UMD modules. Both libraries are ES5 compatible, but do require a Promise implementation. For IE11 this means you need to use a polyfill such as [es6-promise](https://github.com/stefanpenner/es6-promise). Although all browsers that support WebAuthn support ES modules as well, it is still useful to support ES5 browsers for graceful handling in case WebAuthn is not supported.
 
 ### ES module
 
@@ -37,11 +37,15 @@ The UMD module can be used directly as a browser script (exposing WebAuthnUI as 
 
 As a script:
 ```html
+<script type="application/javascript" src="es6-promise.auto.min.js"></script> <!-- For old and crappy browsers -->
 <script type="application/javascript" src="webauthn-ui.min.js"></script>
 ```
 
 Or using require:
 ```js
+
+require('es6-promise')
+
 // When using automatic loading via JSON scripts (see below), just importing the library is enough:
 require('webauthn-ui');
 

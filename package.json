@@ -18,13 +18,13 @@
     "author": "Thomas Bleeker (http://www.madwizard.org)",
     "license": "MIT",
     "dependencies": {
-        "@types/webappsec-credential-management": "^0.3.7"
+        "@types/webappsec-credential-management": "^0.5.1"
     },
     "devDependencies": {
-        "rollup": "^1.14.3",
-        "rollup-plugin-terser": "^5.0.0",
+        "rollup": "^1.18.0",
+        "rollup-plugin-terser": "^5.1.1",
         "rollup-plugin-typescript": "^1.0.1",
-        "tslib": "^1.9.3",
-        "typescript": "^3.5.1"
+        "tslib": "^1.10.0",
+        "typescript": "^3.5.3"
     }
 }

@@ -6,7 +6,7 @@
     Copyright (c) 2018 Thomas Bleeker
 
  */
-import {ready} from './ready';
+import {ready, loaded } from './ready';
 import {
     Converter,
     JsonAuthenticatorResponse,
@@ -21,15 +21,9 @@ class WebAuthnUI
 {
     private static supported : boolean;
     private config: WebAuthnUIConfig;
-
     constructor(config : WebAuthnUIConfig)
     {
-        this.config = Object.assign(
-            {
-                postUnsupported: false,
-            },
-            config
-        );
+        this.config = config;
     }
 
     public static isSupported() : boolean
@@ -40,23 +34,52 @@ class WebAuthnUI
         return this.supported;
     }
 
-    public async start() : Promise<PublicKeyCredential>
+    private static isUserVerifyingPlatformAuthenticatorSupported() : boolean
+    {
+        return this.isSupported() && window['PublicKeyCredential'].isUserVerifyingPlatformAuthenticatorAvailable();
+    }
+
+    private async start() : Promise<any>
     {
         let c = this.config;
         try {
-            await ready();
-
-            if (!WebAuthnUI.isSupported() && c.postUnsupported) {
-                throw new WebAuthnError("unsupported");
-            }  // TODO: else
-            if (c.request === undefined) {
-                throw new WebAuthnError("badrequest");
+            if (this.config.trigger == 'domready') {
+                await ready();
+            } else {
+                await loaded();
             }
+
+            let isSupported : boolean = WebAuthnUI.isSupported();
 
             let credential: PublicKeyCredential;
             let credentialJson : JsonPublicKeyCredential;
 
+            if (c.featureSelector) {
+                let items = document.querySelectorAll(c.featureSelector);
+                if (isSupported) {
+                    for (let i = 0; i < items.length; i++) {
+                        items[i].classList.add('webauthn-supported');
+                    }
+                    if (WebAuthnUI.isUserVerifyingPlatformAuthenticatorSupported()) {
+                        for (let i = 0; i < items.length; i++) {
+                            items[i].classList.add('webauthn-uvpa');
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < items.length; i++) {
+                        items[i].classList.add('webauthn-unsupported');
+                    }
+                }
+            }
+
+            if (!isSupported && c.postUnsupported) {
+                throw new WebAuthnError("unsupported");
+            }
+
             if (c.type === 'create') {
+                if (c.request === undefined) {
+                    throw new WebAuthnError("badrequest");
+                }
                 let request : CredentialCreationOptions = {
                     publicKey: Converter.convertCreationOptions(<JsonPublicKeyCredentialCreationOptions>c.request)
                 };
@@ -64,11 +87,16 @@ class WebAuthnUI
                 credentialJson = Converter.convertAttestationPublicKeyCredential(credential);
 
             } else if (c.type === 'get') {
+                if (c.request === undefined) {
+                    throw new WebAuthnError("badrequest");
+                }
                 let request : CredentialRequestOptions = {
                     publicKey: Converter.convertRequestOptions(<JsonPublicKeyCredentialRequestOptions>c.request)
                 };
                 credential = <PublicKeyCredential>await navigator.credentials.get(request);
                 credentialJson = Converter.convertAssertionPublicKeyCredential(credential);
+            } else if (c.type === 'static') {
+                return null;
             } else {
                 throw new WebAuthnError("badrequest");
             }
@@ -83,15 +111,23 @@ class WebAuthnUI
         {
             if (c.formField !== undefined) {
                 let postData : any = {'status' : 'failed'};
-
                 if (e instanceof DOMException) {
-                    postData.errorName = e.name;
+                    const map = {
+                        NotAllowedError : 'dom-not-allowed',
+                        SecurityError : 'dom-security',
+                        NotSupportedError : 'dom-not-supported',
+                        AbortError : 'dom-aborted',
+                        InvalidStateError : 'dom-invalid-state',
+                    };
+                    postData.errorName = (map[e.name] ? map[e.name] : 'dom-unknown');
+                    postData.domErrorName = e.name;
                 }
-                if (e instanceof WebAuthnError) {
+                else if (e instanceof WebAuthnError) {
                     postData.errorName = e.message;
+                } else {
+                    postData.errorName = 'unknown';
                 }
                 this.postForm(postData);
-
             } else {
                 throw e;
             }
@@ -116,16 +152,17 @@ class WebAuthnUI
     {
         await ready();
         let data = document.querySelectorAll("script[data-webauthn]");
+
         if (!data) return;
 
+        let promises : Promise<any>[] = [];
         for (let i = 0; i < data.length; i++) {
             let el = data.item(i);
             let text = el.textContent;
-
             let config : WebAuthnUIConfig = <WebAuthnUIConfig>JSON.parse(text );
-
-            new WebAuthnUI(config).start();
+            promises.push(new WebAuthnUI(config).start());
         }
+        await Promise.all(promises);
     }
 }
 

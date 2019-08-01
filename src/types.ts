@@ -3,9 +3,11 @@ import * as base64 from './base64';
 export interface WebAuthnUIConfig
 {
     formField?: string,
-    type: 'create' | 'get';
+    type: 'create' | 'get' | 'static';
     request : JsonPublicKeyCredentialCreationOptions|JsonPublicKeyCredentialRequestOptions;
     postUnsupported?: boolean;
+    featureSelector?: string;
+    trigger?: 'domready' | 'load';
 }
 
 
@@ -38,7 +40,7 @@ export interface JsonPublicKeyCredentialRequestOptions {
     timeout: number;
     rpId?: string;
     allowCredentials?: JsonPublicKeyCredentialDescriptor[];
-    userVerification?: UserVerificationRequirement;
+    userVerification?: string;
     extensions?: any;
 }
 
@@ -54,20 +56,20 @@ export interface JsonPublicKeyCredentialUserEntity {
 }
 
 export interface JsonPublicKeyCredentialParameters {
-    type: PublicKeyCredentialType;
+    type: "public-key";
     alg: number;
 }
 
 export interface JsonPublicKeyCredentialDescriptor {
-    type: PublicKeyCredentialType;
+    type: "public-key";
     id: string;
-    transports?: AuthenticatorTransport[];
+    transports?: Array<"usb" | "nfc" | "ble" | "internal">;
 }
 
 export interface JsonAuthenticatorSelectionCriteria {
-    authenticatorAttachment?: AuthenticatorAttachment;
+    authenticatorAttachment?: "platform" | "cross-platform";
     requireResidentKey?: boolean;
-    requireUserVerification?: UserVerificationRequirement;
+    requireUserVerification?: "required" | "preferred" | "discouraged";
 }
 
 export interface JsonPublicKeyCredentialCreationOptions {
@@ -80,7 +82,7 @@ export interface JsonPublicKeyCredentialCreationOptions {
     timeout?: number;
     excludeCredentials?: JsonPublicKeyCredentialDescriptor[];
     authenticatorSelection?: JsonAuthenticatorSelectionCriteria;
-    attestation?: AttestationConveyancePreference;
+    attestation?: "none" | "indirect" | "direct";
     extensions?: any;
 }
 
