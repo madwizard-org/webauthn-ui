@@ -123,7 +123,7 @@ class WebAuthnUI
                     postData.domErrorName = e.name;
                 }
                 else if (e instanceof WebAuthnError) {
-                    postData.errorName = e.message;
+                    postData.errorName = e.name;
                 } else {
                     postData.errorName = 'unknown';
                 }

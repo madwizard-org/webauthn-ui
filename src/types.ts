@@ -208,6 +208,13 @@ export class Converter
     }
 }
 
-export class WebAuthnError extends Error
+// Note: dot not extend Error, this will break instanceof
+// See https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+export class WebAuthnError
 {
+    public name : string;
+
+    constructor(name : string) {
+        this.name = name;
+    }
 }
