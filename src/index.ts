@@ -34,20 +34,16 @@ class WebAuthnUI
         return this.supported;
     }
 
-    private static isUserVerifyingPlatformAuthenticatorSupported() : boolean
+    private static async isUserVerifyingPlatformAuthenticatorSupported() : Promise<boolean>
     {
-        return this.isSupported() && window['PublicKeyCredential'].isUserVerifyingPlatformAuthenticatorAvailable();
+        return this.isSupported() && await window['PublicKeyCredential'].isUserVerifyingPlatformAuthenticatorAvailable();
     }
 
     private async start() : Promise<any>
     {
         let c = this.config;
         try {
-            if (this.config.trigger == 'domready') {
-                await ready();
-            } else {
-                await loaded();
-            }
+            await ready();
 
             let isSupported : boolean = WebAuthnUI.isSupported();
 
@@ -60,20 +56,24 @@ class WebAuthnUI
                     for (let i = 0; i < items.length; i++) {
                         items[i].classList.add('webauthn-supported');
                     }
-                    if (WebAuthnUI.isUserVerifyingPlatformAuthenticatorSupported()) {
-                        for (let i = 0; i < items.length; i++) {
-                            items[i].classList.add('webauthn-uvpa');
-                        }
-                    }
                 } else {
                     for (let i = 0; i < items.length; i++) {
                         items[i].classList.add('webauthn-unsupported');
                     }
                 }
+                WebAuthnUI.isUserVerifyingPlatformAuthenticatorSupported().then((available: boolean) => {
+                    for (let i = 0; i < items.length; i++) {
+                        items[i].classList.add(available ? 'webauthn-uvpa-suppported' : 'webauthn-uvpa-unsupported');
+                    }
+                });
             }
 
             if (!isSupported && c.postUnsupported) {
                 throw new WebAuthnError("unsupported");
+            }
+
+            if (this.config.trigger !== 'domready') {
+                await loaded();
             }
 
             if (c.type === 'create') {
