@@ -110,7 +110,11 @@ export class Converter
             pubKeyCredParams : options.pubKeyCredParams,
         };
 
-        this.copyProps(output, options, ['timeout', 'authenticatorSelection', 'attestation', 'excludeCredentials']);
+        this.copyProps(output, options, ['timeout', 'authenticatorSelection', 'attestation']);
+
+        if (options.excludeCredentials) {
+            output.excludeCredentials = this.convertCredentialDescriptors(options.excludeCredentials);
+        }
 
         // TODO options.extensions
         if (options.extensions) {
