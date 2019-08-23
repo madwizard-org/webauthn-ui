@@ -8,6 +8,7 @@ export interface WebAuthnUIConfig
     postUnsupported?: boolean;
     featureSelector?: string;
     trigger?: 'domready' | 'load';
+    delay?: number;
 }
 
 

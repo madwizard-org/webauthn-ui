@@ -76,6 +76,10 @@ class WebAuthnUI
                 await loaded();
             }
 
+            if (c.type !== 'static' && this.config.delay !== undefined) {
+                await new Promise((x) => setTimeout(x, this.config.delay));
+            }
+
             if (c.type === 'create') {
                 if (c.request === undefined) {
                     throw new WebAuthnError("badrequest");
