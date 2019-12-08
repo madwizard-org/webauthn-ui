@@ -1,6 +1,6 @@
 {
   "name": "webauthn-ui",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "WebAuthn helper module",
   "main": "dist/umd/webauthn-ui.js",
   "module": "dist/es/webauthn-ui.js",
@@ -21,10 +21,10 @@
     "@types/webappsec-credential-management": "^0.5.1"
   },
   "devDependencies": {
-    "rollup": "^1.18.0",
-    "rollup-plugin-terser": "^5.1.1",
+    "rollup": "^1.27.8",
+    "rollup-plugin-terser": "^5.1.2",
     "rollup-plugin-typescript": "^1.0.1",
     "tslib": "^1.10.0",
-    "typescript": "^3.5.3"
+    "typescript": "^3.7.3"
   }
 }
