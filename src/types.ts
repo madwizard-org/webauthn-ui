@@ -1,15 +1,31 @@
 import * as base64 from './base64';
 
-export interface WebAuthnUIConfig
-{
-    formField?: string,
-    type: 'create' | 'get' | 'static';
-    request : JsonPublicKeyCredentialCreationOptions|JsonPublicKeyCredentialRequestOptions;
-    postUnsupported?: boolean;
+type BaseConfig = {
     featureSelector?: string;
     trigger?: 'domready' | 'load';
     delay?: number;
-}
+};
+
+type PostConfig =  {
+    formField?: string,
+    postUnsupported?: boolean;
+};
+
+type CreateConfig = {
+    type: 'create';
+    request: JsonPublicKeyCredentialCreationOptions;
+} & PostConfig & BaseConfig;
+
+type GetConfig = {
+    type: 'get';
+    request : JsonPublicKeyCredentialRequestOptions;
+} & PostConfig & BaseConfig;
+
+type StaticConfig = {
+    type: 'static';
+} & BaseConfig;
+
+export type WebAuthnUIConfig = CreateConfig | GetConfig | StaticConfig;
 
 
 // JSON variants of WebAuthn structures with binary buffers replaced by strings (base64url encoded).
@@ -29,11 +45,11 @@ export interface JsonAuthenticatorAssertionResponse extends JsonAuthenticatorRes
     userHandle: string;
 }
 
-export interface JsonPublicKeyCredential {
+export interface JsonPublicKeyCredential<T extends JsonAuthenticatorResponse> {
     type: string;
     id: string;
     rawId: string;
-    response: JsonAuthenticatorResponse;
+    response: T;
 }
 
 export interface JsonPublicKeyCredentialRequestOptions {
@@ -102,7 +118,7 @@ export class Converter
         }
     }
 
-    public static convertCreationOptions(options : JsonPublicKeyCredentialCreationOptions ) : PublicKeyCredentialCreationOptions
+    public static convertCreationOptions(options : JsonPublicKeyCredentialCreationOptions) : PublicKeyCredentialCreationOptions
     {
         let output : PublicKeyCredentialCreationOptions = {
             rp: options.rp,
@@ -162,7 +178,7 @@ export class Converter
         };
     }
 
-    public static convertAttestationPublicKeyCredential(pkc : PublicKeyCredential) : JsonPublicKeyCredential
+    public static convertAttestationPublicKeyCredential(pkc : PublicKeyCredential) : JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>
     {
         return {
             type: pkc.type,
@@ -172,7 +188,7 @@ export class Converter
         };
     }
 
-    public static convertAssertionPublicKeyCredential(pkc : PublicKeyCredential) : JsonPublicKeyCredential
+    public static convertAssertionPublicKeyCredential(pkc : PublicKeyCredential) : JsonPublicKeyCredential<JsonAuthenticatorAssertionResponse>
     {
         return {
             type: pkc.type,
@@ -217,9 +233,27 @@ export class Converter
 // See https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
 export class WebAuthnError
 {
-    public name : string;
+    public readonly name : string;
+    public readonly innerError?: any;
 
-    constructor(name : string) {
+    constructor(name : string, innerError?: any) {
         this.name = name;
+        this.innerError = innerError;
+    }
+
+    public static fromError(error: any) : WebAuthnError {
+
+        let type = 'unknown';
+        if (error instanceof DOMException) {
+            const map = {
+                NotAllowedError: 'dom-not-allowed',
+                SecurityError: 'dom-security',
+                NotSupportedError: 'dom-not-supported',
+                AbortError: 'dom-aborted',
+                InvalidStateError: 'dom-invalid-state',
+            };
+            type = map[error.name] || 'dom-unknown';
+        }
+        return new WebAuthnError(type, error);
     }
 }
