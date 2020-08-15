@@ -6,7 +6,7 @@
   "module": "dist/es/webauthn-ui.js",
   "typings": "src/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "build": "rollup -c rollup.config.js --environment NODE_ENV:development",
     "watch": "rollup -c rollup.config.js --environment NODE_ENV:development -w",
     "build:prod": "rollup -c rollup.config.js --environment NODE_ENV:production",
@@ -21,9 +21,12 @@
     "@types/webappsec-credential-management": "^0.5.1"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.9",
+    "jest": "^26.4.0",
     "rollup": "^1.32.1",
     "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-typescript": "^1.0.1",
+    "ts-jest": "^26.2.0",
     "tslib": "^1.13.0",
     "typescript": "^3.9.7"
   }

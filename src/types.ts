@@ -54,7 +54,7 @@ export interface JsonPublicKeyCredential<T extends JsonAuthenticatorResponse> {
 
 export interface JsonPublicKeyCredentialRequestOptions {
     challenge: string;
-    timeout: number;
+    timeout?: number;
     rpId?: string;
     allowCredentials?: JsonPublicKeyCredentialDescriptor[];
     userVerification?: string;
@@ -62,7 +62,7 @@ export interface JsonPublicKeyCredentialRequestOptions {
 }
 
 export interface JsonPublicKeyCredentialRpEntity {
-    id: string;
+    id?: string;
     name: string;
 }
 
@@ -70,6 +70,7 @@ export interface JsonPublicKeyCredentialUserEntity {
     id: string;
     name: string;
     displayName: string;
+    icon?: string;
 }
 
 export interface JsonPublicKeyCredentialParameters {
@@ -80,13 +81,13 @@ export interface JsonPublicKeyCredentialParameters {
 export interface JsonPublicKeyCredentialDescriptor {
     type: "public-key";
     id: string;
-    transports?: Array<"usb" | "nfc" | "ble" | "internal">;
+    transports?: Array<"usb" | "nfc" | "ble" | "internal">;  // TODO: in newer spec this is a string, not an enum.
 }
 
 export interface JsonAuthenticatorSelectionCriteria {
     authenticatorAttachment?: "platform" | "cross-platform";
     requireResidentKey?: boolean;
-    requireUserVerification?: "required" | "preferred" | "discouraged";
+    userVerification?: "required" | "preferred" | "discouraged";
 }
 
 export interface JsonPublicKeyCredentialCreationOptions {
@@ -200,20 +201,22 @@ export class Converter
 
     private static convertCredentialDescriptors(excludeCredentials: JsonPublicKeyCredentialDescriptor[]) : PublicKeyCredentialDescriptor[]
     {
-        let list = [];
-        excludeCredentials.forEach((value) => {
-            list.push(Converter.convertCredentialDescriptor(value));
-        })
-        return list;
+        return excludeCredentials.map((value) => {
+            return Converter.convertCredentialDescriptor(value);
+        });
     }
 
     private static convertUser(user: JsonPublicKeyCredentialUserEntity) : PublicKeyCredentialUserEntity
     {
-        return {
+        let convertedUser : PublicKeyCredentialUserEntity = {
             id: base64.decode(user.id),
             name: user.name,
             displayName: user.displayName,
         };
+        if (user.icon !== undefined) {
+            convertedUser.icon = user.icon;
+        }
+        return convertedUser;
     }
 
     private static convertCredentialDescriptor(value: JsonPublicKeyCredentialDescriptor) : PublicKeyCredentialDescriptor

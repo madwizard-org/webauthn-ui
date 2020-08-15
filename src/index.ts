@@ -15,16 +15,11 @@ import {
     WebAuthnError
 } from "./types";
 
-class WebAuthnUI
+export class WebAuthnUI
 {
-    private static supported : boolean;
-
     public static isSupported() : boolean
     {
-        if (this.supported === undefined) {
-            this.supported = typeof window['PublicKeyCredential'] !== 'undefined';
-        }
-        return this.supported;
+        return typeof window['PublicKeyCredential'] !== 'undefined';
     }
 
     public static async isUVPASupported() : Promise<boolean>
@@ -39,7 +34,7 @@ class WebAuthnUI
         }
     }
 
-    public async createCredential(options: JsonPublicKeyCredentialCreationOptions): Promise<JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>>
+    public static async createCredential(options: JsonPublicKeyCredentialCreationOptions): Promise<JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>>
     {
         WebAuthnUI.checkSupport();
         let request : CredentialCreationOptions = {
@@ -55,7 +50,7 @@ class WebAuthnUI
         return Converter.convertAttestationPublicKeyCredential(credential);
     }
 
-    public async getCredential(options: JsonPublicKeyCredentialRequestOptions): Promise<JsonPublicKeyCredential<JsonAuthenticatorAssertionResponse>>
+    public static async getCredential(options: JsonPublicKeyCredentialRequestOptions): Promise<JsonPublicKeyCredential<JsonAuthenticatorAssertionResponse>>
     {
         WebAuthnUI.checkSupport();
         let request : CredentialRequestOptions = {
@@ -70,7 +65,7 @@ class WebAuthnUI
         return Converter.convertAssertionPublicKeyCredential(credential);
     }
 
-    public async setFeatureCssClasses(selector: string|Element): Promise<void>
+    public static async setFeatureCssClasses(selector: string|Element): Promise<void>
     {
         let items: NodeListOf<HTMLElement>|Element[];
         if (typeof selector === "string" ) {
@@ -208,15 +203,23 @@ class WebAuthnUI
     //     await Promise.all(promises);
     // }
 }
-//
-// WebAuthnUI
-//     .registerOnReady()
-//     .catch(
-//         (e) => {
-//             if(console && console.error) {
-//                 console.error(e);
-//             }
-//         }
-//     );
+
+async function auto()
+{
+    await ready();
+    document.querySelectorAll('.webauthn-detect').forEach(WebAuthnUI.setFeatureCssClasses);
+    let data = document.querySelectorAll("script[data-webauthn]");
+    if (data) {
+
+    }
+}
+
+auto().catch(
+        (e) => {
+            if(console && console.error) {
+                console.error(e);
+            }
+        }
+    );
 
 export default WebAuthnUI;

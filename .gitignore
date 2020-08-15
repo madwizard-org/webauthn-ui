@@ -4,3 +4,4 @@
 /src/*.js.map
 /src/*.d.ts
 /.idea
+/coverage

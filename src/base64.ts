@@ -1,3 +1,5 @@
+import {WebAuthnError} from "./types";
+
 export function encode(arraybuffer: ArrayBuffer) {
 
     let buffer = new Uint8Array(arraybuffer);
@@ -29,7 +31,7 @@ export function decode(base64) {
             base64 += "=";
             break;
         case 1:
-            throw 'Invalid base64url string';
+            throw new WebAuthnError('parse-error');
     }
 
     let bin = window.atob(base64);

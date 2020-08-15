@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "es6",
+        "module": "esNext",
         "target": "es5",
         "importHelpers": true,
         "lib": [
@@ -10,7 +10,8 @@
         ],
         "sourceMap": true,
         "moduleResolution": "node",
-        "declaration": true
+        "declaration": true,
+        "esModuleInterop": true
     },
     "files": [
         "src/index.ts"
