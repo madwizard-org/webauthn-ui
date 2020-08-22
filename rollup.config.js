@@ -24,8 +24,7 @@ let builds =
                 file: 'dist/umd/webauthn-ui.js',
                 format: 'umd',
                 name: 'WebAuthnUI',
-                banner: banner,
-                sourcemap: devMode,
+                banner: banner
             },
             plugins: [typescript(), cleanup()]
         },
@@ -43,6 +42,10 @@ let builds =
     ];
 
 if (!devMode) {
+
+    // Note: commments (including copyright comments) are stripped in minified mode.
+    // The only external code that is bundled is from tslib. It is allowed to leave out its 0BSD licence
+    // See https://github.com/microsoft/tslib/issues/47
     builds = builds.concat([
             {
                 input: './src/index.ts',
@@ -54,7 +57,7 @@ if (!devMode) {
                     sourcemap: devMode,
 
                 },
-                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /webauthn-ui/}})]
+                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}})]
             },
             {
                 input: './src/index.ts',
@@ -64,7 +67,7 @@ if (!devMode) {
                     banner: banner,
                     sourcemap: devMode,
                 },
-                plugins: [typescript(), terser({sourcemap: devMode, numWorkers: 1, output: { comments: /webauthn-ui/}})]
+                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}})]
             }
 
         ]
