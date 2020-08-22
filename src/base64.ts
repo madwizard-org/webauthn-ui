@@ -1,6 +1,6 @@
-import {WebAuthnError} from "./types";
+import {WebAuthnError} from "./error";
 
-export function encode(arraybuffer: ArrayBuffer) {
+export function encode(arraybuffer: ArrayBuffer): string {
 
     let buffer = new Uint8Array(arraybuffer);
     let binary: string = '';
@@ -19,7 +19,7 @@ export function encode(arraybuffer: ArrayBuffer) {
     return encoded;
 }
 
-export function decode(base64) {
+export function decode(base64: string): ArrayBuffer {
 
     base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
 

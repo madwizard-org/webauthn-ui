@@ -16,13 +16,13 @@ test('auto', async () => {
     await import('../src/index');
 
     // No auto code run yet
-    expect(document.getElementById('test').classList.value).toBe('webauthn-detect');
+    expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect');
 
     // Document loaded
     state = 'interactive';
     await document.dispatchEvent(new Event("DOMContentLoaded"));
 
     /// Auto code run
-    expect(document.getElementById('test').classList.value).toBe('webauthn-detect webauthn-unsupported');
+    expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect webauthn-unsupported');
 
 });

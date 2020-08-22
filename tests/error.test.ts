@@ -1,4 +1,4 @@
-import {WebAuthnError} from "../src/types";
+import {WebAuthnError} from "../src/error";
 
 
 test("WebAuthnEror", () => {
@@ -8,3 +8,14 @@ test("WebAuthnEror", () => {
     expect(domError).toHaveProperty('name', 'dom-not-allowed');
     expect(domError.innerError).toBe(inner);
 });
+
+
+test("Check instanceof", () => {
+    // Because of:
+    // https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
+    // https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-2.html#support-for-newtarget
+    let error = new WebAuthnError("test");
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(WebAuthnError);
+})

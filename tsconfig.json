@@ -9,6 +9,7 @@
             "es2015.promise"
         ],
         "sourceMap": true,
+        "strict": true,
         "moduleResolution": "node",
         "declaration": true,
         "esModuleInterop": true

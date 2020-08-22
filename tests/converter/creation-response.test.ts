@@ -1,6 +1,5 @@
-import {Converter} from '../../src/types';
-
 import * as fixtures from '../fixtures';
+import {Converter} from "../../src/converter";
 
 
 test('Attestation response converter', () => {

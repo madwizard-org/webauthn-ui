@@ -1,5 +1,5 @@
 import {decode, encode} from "../src/base64";
-import {WebAuthnError} from "../src/types";
+import {WebAuthnError} from "../src/error";
 
 
 test('base64url encode', () => {

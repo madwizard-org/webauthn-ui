@@ -1,10 +1,9 @@
-import {Converter} from '../../src/types';
-
 import * as fixtures from '../fixtures';
+import {Converter} from "../../src/converter";
 
 
 
-test('Attestation mininal response converter', () => {
+test('Assertion mininal response converter', () => {
 
     let credential : PublicKeyCredential = {
         id: fixtures.urlCredentialId,
@@ -40,7 +39,7 @@ test('Attestation mininal response converter', () => {
 
 
 
-test('Attestation full response converter', () => {
+test('Assertion full response converter', () => {
 
     let credential : PublicKeyCredential = {
         id: fixtures.urlCredentialId,

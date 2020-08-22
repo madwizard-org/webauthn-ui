@@ -8,14 +8,15 @@
  */
 import {ready, loaded } from './ready';
 import {
-    Converter, JsonAuthenticatorAssertionResponse, JsonAuthenticatorAttestationResponse,
+    JsonAuthenticatorAssertionResponse, JsonAuthenticatorAttestationResponse,
      JsonPublicKeyCredential,
     JsonPublicKeyCredentialCreationOptions,
-    JsonPublicKeyCredentialRequestOptions,
-    WebAuthnError
+    JsonPublicKeyCredentialRequestOptions
 } from "./types";
+import {WebAuthnError} from "./error";
+import {Converter} from "./converter";
 
-export class WebAuthnUI
+export default class WebAuthnUI
 {
     public static isSupported() : boolean
     {
@@ -222,4 +223,3 @@ auto().catch(
         }
     );
 
-export default WebAuthnUI;

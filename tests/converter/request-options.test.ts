@@ -1,5 +1,6 @@
-import {Converter, JsonPublicKeyCredentialDescriptor} from '../../src/types';
+import {JsonPublicKeyCredentialDescriptor} from '../../src/types';
 import * as fixtures from '../fixtures';
+import {Converter} from "../../src/converter";
 
 test('Minimal request converter', () => {
     expect(Converter.convertRequestOptions({
