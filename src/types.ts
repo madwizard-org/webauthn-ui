@@ -1,34 +1,45 @@
+import {ErrorType} from "./error";
+
 type BaseConfig = {
-    featureSelector?: string;
     trigger?: 'domready' | 'load';
     delay?: number;
 };
 
-type PostConfig =  {
-    formField?: string,
-    postUnsupported?: boolean;
-};
-
-type CreateConfig = {
+interface CreateConfig extends BaseConfig {
     type: 'create';
     request: JsonPublicKeyCredentialCreationOptions;
-} & PostConfig & BaseConfig;
+}
 
-type GetConfig = {
+interface RequestConfig extends BaseConfig {
     type: 'get';
     request : JsonPublicKeyCredentialRequestOptions;
-} & PostConfig & BaseConfig;
+}
 
-type StaticConfig = {
-    type: 'static';
-} & BaseConfig;
+export type Config = CreateConfig | RequestConfig;
 
-export type WebAuthnUIConfig = CreateConfig | GetConfig | StaticConfig;
+export type AutoConfig =
+{
+    formField?: string|HTMLInputElement|HTMLTextAreaElement,
+    postUnsupported?: boolean;
+    submitForm?: boolean;
+} & Config;
 
+
+export interface SuccessResponse {
+    status: 'ok';
+    credential: JsonAttestationPublicKeyCredential|JsonAssertionPublicKeyCredential;
+}
+
+
+export interface FailureResponse {
+    status: 'failed';
+    error: ErrorType;
+}
+
+export type StatusResponse = SuccessResponse|FailureResponse;
 
 // JSON variants of WebAuthn structures with binary buffers replaced by strings (base64url encoded).
 // based on @types/webappsec-credential-management types
-
 export interface JsonAuthenticatorResponse {
     clientDataJSON : string;
 }
@@ -49,6 +60,9 @@ export interface JsonPublicKeyCredential<T extends JsonAuthenticatorResponse> {
     rawId: string;
     response: T;
 }
+
+export type JsonAttestationPublicKeyCredential = JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>;
+export type JsonAssertionPublicKeyCredential = JsonPublicKeyCredential<JsonAuthenticatorAssertionResponse>;
 
 export interface JsonPublicKeyCredentialRequestOptions {
     challenge: string;

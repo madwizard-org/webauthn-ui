@@ -1,8 +1,26 @@
-export class WebAuthnError extends Error {
-    public readonly innerError?: any;
 
-    constructor(name: string, message?: string, innerError?: any) {
-        super(message || `WebAuthnUI error: ${name}`); // 'Error' breaks prototype chain here
+export enum ErrorType
+{
+    Unknown = "unknown",
+    Unsupported = "unsupported",
+    ParseError = "parseerror",
+    BadConfig = "badconfig",
+    DomNotAllowed = 'dom-not-allowed',
+    DomSecurity = 'dom-security',
+    DomNotSupported = 'dom-not-supported',
+    DomAbort = 'dom-abort',
+    DomInvalidState = 'dom-invalid-state',
+    DomUnknown = 'dom-unknown',
+};
+
+
+
+export class WebAuthnError extends Error {
+    public readonly innerError?: Error;
+    public readonly name: ErrorType;
+
+    constructor(name: ErrorType, message?: string, innerError?: Error) {
+        super( `WebAuthnUI error: ${message !== undefined ? message : name}`); // 'Error' breaks prototype chain here
         Object.setPrototypeOf(this, new.target.prototype); // restore prototype chain
         this.name = name;
         this.innerError = innerError;
@@ -10,22 +28,22 @@ export class WebAuthnError extends Error {
 
     public static fromError(error: any): WebAuthnError {
 
-        let type = 'unknown';
+        let type : ErrorType = ErrorType.Unknown;
         let message = 'WebAuthnUI error: ';
         if (error instanceof DOMException) {
             const map = {
-                NotAllowedError: 'dom-not-allowed',
-                SecurityError: 'dom-security',
-                NotSupportedError: 'dom-not-supported',
-                AbortError: 'dom-aborted',
-                InvalidStateError: 'dom-invalid-state',
+                NotAllowedError: ErrorType.DomNotAllowed,
+                SecurityError: ErrorType.DomSecurity,
+                NotSupportedError: ErrorType.DomNotSupported,
+                AbortError: ErrorType.DomAbort,
+                InvalidStateError: ErrorType.DomInvalidState,
             };
-            type = map[error.name as keyof typeof map] || 'dom-unknown';
+            type = map[error.name as keyof typeof map] || ErrorType.DomUnknown;
             message += type;
         } else {
             message += `unknown (${error.toString()})`;
         }
 
-        return new WebAuthnError(type, message, error);
+        return new WebAuthnError(type, message, error instanceof Error ? error : undefined);
     }
 }

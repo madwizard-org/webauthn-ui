@@ -6,14 +6,20 @@
     Copyright (c) 2018 - 2020 Thomas Bleeker
 
  */
-import {ready, loaded } from './ready';
-import {
-    JsonAuthenticatorAssertionResponse, JsonAuthenticatorAttestationResponse,
-     JsonPublicKeyCredential,
+import {loaded, ready} from './ready';
+
+import type {
+    AutoConfig,
+    Config, FailureResponse,
+    JsonAssertionPublicKeyCredential,
+    JsonAttestationPublicKeyCredential,
     JsonPublicKeyCredentialCreationOptions,
-    JsonPublicKeyCredentialRequestOptions
+    JsonPublicKeyCredentialRequestOptions,
+    StatusResponse,
+    SuccessResponse
 } from "./types";
-import {WebAuthnError} from "./error";
+
+import {ErrorType, WebAuthnError} from "./error";
 import {Converter} from "./converter";
 
 export default class WebAuthnUI
@@ -31,14 +37,14 @@ export default class WebAuthnUI
     private static checkSupport()
     {
         if (!WebAuthnUI.isSupported()) {
-            throw new WebAuthnError('unsupported');
+            throw new WebAuthnError(ErrorType.Unsupported);
         }
     }
 
-    public static async createCredential(options: JsonPublicKeyCredentialCreationOptions): Promise<JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>>
+    public static async createCredential(options: JsonPublicKeyCredentialCreationOptions): Promise<JsonAttestationPublicKeyCredential>
     {
         WebAuthnUI.checkSupport();
-        let request : CredentialCreationOptions = {
+        const request : CredentialCreationOptions = {
             publicKey: Converter.convertCreationOptions(options)
         };
 
@@ -51,10 +57,10 @@ export default class WebAuthnUI
         return Converter.convertAttestationPublicKeyCredential(credential);
     }
 
-    public static async getCredential(options: JsonPublicKeyCredentialRequestOptions): Promise<JsonPublicKeyCredential<JsonAuthenticatorAssertionResponse>>
+    public static async getCredential(options: JsonPublicKeyCredentialRequestOptions): Promise<JsonAssertionPublicKeyCredential>
     {
         WebAuthnUI.checkSupport();
-        let request : CredentialRequestOptions = {
+        const request : CredentialRequestOptions = {
             publicKey: Converter.convertRequestOptions(options)
         };
         let credential;
@@ -74,7 +80,7 @@ export default class WebAuthnUI
         } else {
             items = [selector];
         }
-        let applyClass = (cls: string) => {
+        const applyClass = (cls: string) => {
             for (let i = 0; i < items.length; i++) {
                 items[i].classList.add(cls);
             }
@@ -84,142 +90,127 @@ export default class WebAuthnUI
             applyClass('webauthn-uvpa-' + (available ? '' : 'un') + 'supported');
         });
     }
-    //
-    //
-    // private async start() : Promise<ReturnTypeMap[T]>
-    // {
-    //     let c = this.config;
-    //     try {
-    //         await ready();
-    //
-    //         let isSupported : boolean = WebAuthnUI.isSupported();
-    //
-    //         let credential: PublicKeyCredential;
-    //         let credentialJson : JsonPublicKeyCredential;
-    //
-    //         if (c.featureSelector) {
-    //             let items = document.querySelectorAll(c.featureSelector);
-    //             if (isSupported) {
-    //                 for (let i = 0; i < items.length; i++) {
-    //                     items[i].classList.add('webauthn-supported');
-    //                 }
-    //             } else {
-    //                 for (let i = 0; i < items.length; i++) {
-    //                     items[i].classList.add('webauthn-unsupported');
-    //                 }
-    //             }
-    //
-    //         }
-    //
-    //         if (!isSupported && c.postUnsupported) {
-    //             throw new WebAuthnError("unsupported");
-    //         }
-    //
-    //         if (this.config.trigger !== 'domready') {
-    //             await loaded();
-    //         }
-    //
-    //         if (c.type !== 'static' && this.config.delay !== undefined) {
-    //             await new Promise((x) => setTimeout(x, this.config.delay));
-    //         }
-    //
-    //         if (c.type === 'create') {
-    //             if (c.request === undefined) {
-    //                 throw new WebAuthnError("badrequest");
-    //             }
-    //
-    //
-    //         } else if (c.type === 'get') {
-    //             if (c.request === undefined) {
-    //                 throw new WebAuthnError("badrequest");
-    //             }
-    //
-    //         } else if (c.type === 'static') {
-    //             return null;
-    //         } else {
-    //             throw new WebAuthnError("badrequest");
-    //         }
-    //
-    //         if (c.formField !== undefined) {
-    //             let postData : any = {'status' : 'ok',  ...credentialJson};
-    //             this.postForm(postData);
-    //         }
-    //         return credential;
-    //     }
-    //     catch(e)
-    //     {
-    //         if (c.formField !== undefined) {
-    //             let postData : any = {'status' : 'failed'};
-    //             if (e instanceof DOMException) {
-    //                 const map = {
-    //                     NotAllowedError : 'dom-not-allowed',
-    //                     SecurityError : 'dom-security',
-    //                     NotSupportedError : 'dom-not-supported',
-    //                     AbortError : 'dom-aborted',
-    //                     InvalidStateError : 'dom-invalid-state',
-    //                 };
-    //                 postData.errorName = (map[e.name] ? map[e.name] : 'dom-unknown');
-    //                 postData.domErrorName = e.name;
-    //             }
-    //             else if (e instanceof WebAuthnError) {
-    //                 postData.errorName = e.name;
-    //             } else {
-    //                 postData.errorName = 'unknown';
-    //             }
-    //             this.postForm(postData);
-    //         } else {
-    //             throw e;
-    //         }
-    //     }
-    // }
-    //
-    // private postForm(data : any)
-    // {
-    //     let element = document.querySelector(this.config.formField);
-    //     if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)) {
-    //         throw new Error("formField is not an input element")
-    //     }
-    //
-    //     element.value = JSON.stringify(data);
-    //     if (element.form) {
-    //         element.form.submit();
-    //     }
-    // }
-    //
-    //
-    // public static async registerOnReady()
-    // {
-    //     await ready();
-    //     let data = document.querySelectorAll("script[data-webauthn]");
-    //
-    //     if (!data) return;
-    //
-    //     let promises : Promise<any>[] = [];
-    //     for (let i = 0; i < data.length; i++) {
-    //         let el = data.item(i);
-    //         let text = el.textContent;
-    //         let config : WebAuthnUIConfig = <WebAuthnUIConfig>JSON.parse(text );
-    //         promises.push(new WebAuthnUI(config).start());
-    //     }
-    //     await Promise.all(promises);
-    // }
+
+    private static async waitConfig(config : Config): Promise<void>
+    {
+        await ready();
+        if (config.trigger !== 'domready') {
+            await loaded();
+        }
+        if (config.delay !== undefined) {
+            await new Promise((x) => setTimeout(x, config.delay));
+        }
+    }
+
+    private static async runConfig(config: Config): Promise<SuccessResponse>
+    {
+        await this.waitConfig(config);
+
+        let credential : JsonAttestationPublicKeyCredential|JsonAssertionPublicKeyCredential;
+
+        if (config.type === 'get') {
+            credential = await this.getCredential(config.request);
+        } else if (config.type === 'create') {
+            credential = await this.createCredential(config.request);
+        } else {
+            throw new WebAuthnError(ErrorType.BadConfig, `Invalid config.type ${(config as any).type}`);
+        }
+
+        return {
+            status: 'ok',
+            credential
+        };
+    }
+
+    public static async startConfig(config : Config): Promise<SuccessResponse> {
+        let response: SuccessResponse;
+        try {
+            response = await this.runConfig(config);
+        } catch (e) {
+            throw {
+                status: 'failed',
+                error: (e instanceof WebAuthnError ? e : WebAuthnError.fromError(e)).name
+            }
+        }
+        return response;
+    }
+
+    private static async runAutoConfig(config : AutoConfig): Promise<StatusResponse|null>
+    {
+        if (!this.isSupported() && config.postUnsupported === false) {
+            return null;
+        }
+
+        let field = config.formField;
+        if (typeof field === 'string') {
+            const el = document.querySelector(field);
+            if (el === null) {
+                throw new WebAuthnError(ErrorType.BadConfig, 'Could not find formField.')
+            }
+            field = el as HTMLTextAreaElement|HTMLInputElement;
+        }
+
+        if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) {
+            throw new WebAuthnError(ErrorType.BadConfig, 'formField does not refer to an input element.')
+        }
+
+        let response : StatusResponse;
+
+        try {
+            response = await this.startConfig(config);
+        } catch(e) {
+            response = e as FailureResponse;
+        }
+        field.value = JSON.stringify(response);
+        if (config.submitForm !== false && field.form) {
+            field.form.submit();
+        }
+        return response;
+    }
+
+    public static async autoConfig(): Promise<void> {
+        let promises: Promise<StatusResponse|null>[] = [];
+        const list = document.querySelectorAll("input[data-webauthn],textarea[data-webauthn],script[data-webauthn]");
+        for (let i = 0; i < list.length; i++) {
+            let el = list[i];
+            let isScript = el.tagName === 'SCRIPT';
+            if (isScript && (el as HTMLScriptElement).type !== 'application/json') {
+                throw new WebAuthnError(ErrorType.BadConfig, 'Expecting application/json script with data-webauthn');
+            }
+            const rawJson: string | null = isScript ? el.textContent : (el).getAttribute('data-webauthn');
+            if (rawJson === null) {
+                throw new WebAuthnError(ErrorType.BadConfig, 'Missing JSON in data-webauthn');
+            }
+            const json = JSON.parse(rawJson) as AutoConfig;
+            if (!json) {
+                throw new WebAuthnError(ErrorType.BadConfig, 'invalid JSON in data-webauthn on element');
+            }
+            if (!isScript && json.formField === undefined) {
+                json.formField = el as HTMLInputElement | HTMLTextAreaElement;
+            }
+            promises.push(this.runAutoConfig(json));
+        }
+
+        await Promise.all(promises);
+    }
 }
 
 async function auto()
 {
     await ready();
-    document.querySelectorAll('.webauthn-detect').forEach(WebAuthnUI.setFeatureCssClasses);
-    let data = document.querySelectorAll("script[data-webauthn]");
-    if (data) {
-
+    const list = document.querySelectorAll('.webauthn-detect');
+    for (let i = 0; i < list.length; i++) {
+        WebAuthnUI.setFeatureCssClasses(list[i]);
     }
+    await WebAuthnUI.autoConfig();
+
 }
 
 auto().catch(
-        (e) => {
-            if(console && console.error) {
-                console.error(e);
-            }
+    (e) => {
+        if(console && console.error) {
+            console.error(e);
         }
-    );
+    }
+);
 

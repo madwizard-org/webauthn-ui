@@ -1,5 +1,5 @@
 import {terser} from "rollup-plugin-terser";
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 
 const env = process.env.NODE_ENV;
 const devMode = (env === 'development');

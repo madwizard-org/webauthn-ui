@@ -2,13 +2,11 @@ import WebAuthnUI from "../src";
 import * as fixtures from "./fixtures";
 import type {
     JsonAuthenticatorAssertionResponse,
-    JsonAuthenticatorAttestationResponse,
     JsonPublicKeyCredential,
-    JsonPublicKeyCredentialCreationOptions, JsonPublicKeyCredentialRequestOptions,
-
+    JsonPublicKeyCredentialCreationOptions,
+    JsonPublicKeyCredentialRequestOptions,
 } from "../src/types";
-import {WebAuthnError} from "../src/error";
-import {Converter} from "../src/converter";
+import {ErrorType, WebAuthnError} from "../src/error";
 
 beforeEach(() => {
     (navigator as any).credentials = undefined;
@@ -34,7 +32,7 @@ const options : JsonPublicKeyCredentialCreationOptions= {
 
 test("Get credential unsupported", async () =>
 {
-    await expect(WebAuthnUI.getCredential(options)).rejects.toThrow(new WebAuthnError('unsupported'));
+    await expect(WebAuthnUI.getCredential(options)).rejects.toThrow(new WebAuthnError(ErrorType.Unsupported));
 });
 
 test("Get credential DOM error", async () =>
