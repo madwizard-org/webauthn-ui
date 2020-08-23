@@ -8,6 +8,7 @@
   "scripts": {
     "test": "jest",
     "test-coverage": "jest --coverage",
+    "lint" : "eslint --ext ts src tests",
     "build": "rollup -c rollup.config.js --environment NODE_ENV:development",
     "watch": "rollup -c rollup.config.js --environment NODE_ENV:development -w",
     "build:prod": "rollup -c rollup.config.js --environment NODE_ENV:production",

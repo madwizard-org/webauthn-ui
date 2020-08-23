@@ -1,19 +1,15 @@
 
-export enum ErrorType
-{
-    Unknown = "unknown",
-    Unsupported = "unsupported",
-    ParseError = "parseerror",
-    BadConfig = "badconfig",
-    DomNotAllowed = 'dom-not-allowed',
-    DomSecurity = 'dom-security',
-    DomNotSupported = 'dom-not-supported',
-    DomAbort = 'dom-abort',
-    DomInvalidState = 'dom-invalid-state',
-    DomUnknown = 'dom-unknown',
-};
-
-
+export type ErrorType =
+    'unknown' |
+    'unsupported' |
+    'parse-error' |
+    'bad-config' |
+    'dom-not-allowed' |
+    'dom-security' |
+    'dom-not-supported' |
+    'dom-abort' |
+    'dom-invalid-state' |
+    'dom-unknown';
 
 export class WebAuthnError extends Error {
     public readonly innerError?: Error;
@@ -28,17 +24,17 @@ export class WebAuthnError extends Error {
 
     public static fromError(error: any): WebAuthnError {
 
-        let type : ErrorType = ErrorType.Unknown;
+        let type : ErrorType = 'unknown';
         let message = 'WebAuthnUI error: ';
         if (error instanceof DOMException) {
-            const map = {
-                NotAllowedError: ErrorType.DomNotAllowed,
-                SecurityError: ErrorType.DomSecurity,
-                NotSupportedError: ErrorType.DomNotSupported,
-                AbortError: ErrorType.DomAbort,
-                InvalidStateError: ErrorType.DomInvalidState,
+            const map : { [key : string] : ErrorType } = {
+                NotAllowedError: 'dom-not-allowed',
+                SecurityError: 'dom-security',
+                NotSupportedError: 'dom-not-supported',
+                AbortError: 'dom-abort',
+                InvalidStateError: 'dom-invalid-state',
             };
-            type = map[error.name as keyof typeof map] || ErrorType.DomUnknown;
+            type = map[error.name as keyof typeof map] || 'dom-unknown';
             message += type;
         } else {
             message += `unknown (${error.toString()})`;

@@ -1,28 +1,15 @@
 import { ready, loaded } from '../src/ready';
+import {ReadyStateMocker} from "./mock";
 
-// Setup fake DOM readyState
-let state = 'loading';
-Object.defineProperty(document, 'readyState', { get() { return state; }})
 
+let stateMock = new ReadyStateMocker();
 
 beforeEach(() => {
-    state = 'loading';
+    stateMock.resetLoading();
+
 });
 
 
-async function enterInteractive()
-{
-    // Document loaded
-    state = 'interactive';
-    await document.dispatchEvent(new Event("DOMContentLoaded"));
-}
-
-async function enterComplete()
-{
-    // Document loaded
-    state = 'complete';
-    await window.dispatchEvent(new Event("load"));
-}
 
 test('ready() before DOM loaded', async () => {
 
@@ -30,13 +17,13 @@ test('ready() before DOM loaded', async () => {
     ready().then(() => { readyResult = true; }).catch(() => {readyResult = false; });
 
     expect(readyResult).toBe(null);
-    await enterInteractive();
+    await stateMock.enterInteractive();
     expect(readyResult).toBe(true);
 });
 
 
 test('ready() after DOM loaded', async () => {
-    await enterInteractive();
+    await stateMock.enterInteractive();
 
     let readyResult : boolean|null = null;
     await ready().then(() => { readyResult = true; }).catch(() => {readyResult = false; });
@@ -46,7 +33,7 @@ test('ready() after DOM loaded', async () => {
 
 
 test('ready() after complete', async () => {
-    await enterComplete();
+    await stateMock.enterComplete();
 
     let readyResult : boolean|null = null;
     await ready().then(() => { readyResult = true; }).catch(() => {readyResult = false; });
@@ -61,28 +48,28 @@ test('loaded() before DOM loaded', async () => {
     loaded().then(() => { readyResult = true; }).catch(() => {readyResult = false; });
 
     expect(readyResult).toBe(null);
-    await enterInteractive();
+    await stateMock.enterInteractive();
     expect(readyResult).toBe(null);
-    await enterComplete();
+    await stateMock.enterComplete();
     expect(readyResult).toBe(true);
 });
 
 
 test('loaded() after DOM loaded', async () => {
-    await enterInteractive();
+    await stateMock.enterInteractive();
 
     let readyResult : boolean|null = null;
     loaded().then(() => { readyResult = true; }).catch(() => {readyResult = false; });
     expect(readyResult).toBe(null);
 
-    await enterComplete();
+    await stateMock.enterComplete();
     expect(readyResult).toBe(true);
 });
 
 
 test('loaded() after complete', async () => {
-    await enterInteractive();
-    await enterComplete();
+    await stateMock.enterInteractive();
+    await stateMock.enterComplete();
     let readyResult : boolean|null = null;
     await loaded().then(() => { readyResult = true; }).catch(() => {readyResult = false; });
     expect(readyResult).toBe(true);

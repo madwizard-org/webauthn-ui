@@ -19,11 +19,13 @@ import type {
     SuccessResponse
 } from "./types";
 
-import {ErrorType, WebAuthnError} from "./error";
+import {WebAuthnError} from "./error";
 import {Converter} from "./converter";
 
 export default class WebAuthnUI
 {
+    public static autoPromise : Promise<void>;
+
     public static isSupported() : boolean
     {
         return typeof window['PublicKeyCredential'] !== 'undefined';
@@ -37,7 +39,7 @@ export default class WebAuthnUI
     private static checkSupport()
     {
         if (!WebAuthnUI.isSupported()) {
-            throw new WebAuthnError(ErrorType.Unsupported);
+            throw new WebAuthnError('unsupported');
         }
     }
 
@@ -54,7 +56,7 @@ export default class WebAuthnUI
         } catch(e) {
             throw WebAuthnError.fromError(e);
         }
-        return Converter.convertAttestationPublicKeyCredential(credential);
+        return Converter.convertCreationResponse(credential);
     }
 
     public static async getCredential(options: JsonPublicKeyCredentialRequestOptions): Promise<JsonAssertionPublicKeyCredential>
@@ -69,7 +71,7 @@ export default class WebAuthnUI
         } catch(e) {
             throw WebAuthnError.fromError(e);
         }
-        return Converter.convertAssertionPublicKeyCredential(credential);
+        return Converter.convertRequestResponse(credential);
     }
 
     public static async setFeatureCssClasses(selector: string|Element): Promise<void>
@@ -113,7 +115,7 @@ export default class WebAuthnUI
         } else if (config.type === 'create') {
             credential = await this.createCredential(config.request);
         } else {
-            throw new WebAuthnError(ErrorType.BadConfig, `Invalid config.type ${(config as any).type}`);
+            throw new WebAuthnError('bad-config', `Invalid config.type ${(config as any).type}`);
         }
 
         return {
@@ -145,13 +147,13 @@ export default class WebAuthnUI
         if (typeof field === 'string') {
             const el = document.querySelector(field);
             if (el === null) {
-                throw new WebAuthnError(ErrorType.BadConfig, 'Could not find formField.')
+                throw new WebAuthnError('bad-config', 'Could not find formField.')
             }
             field = el as HTMLTextAreaElement|HTMLInputElement;
         }
 
         if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) {
-            throw new WebAuthnError(ErrorType.BadConfig, 'formField does not refer to an input element.')
+            throw new WebAuthnError('bad-config', 'formField does not refer to an input element.')
         }
 
         let response : StatusResponse;
@@ -169,21 +171,21 @@ export default class WebAuthnUI
     }
 
     public static async autoConfig(): Promise<void> {
-        let promises: Promise<StatusResponse|null>[] = [];
+        const promises: Promise<StatusResponse|null>[] = [];
         const list = document.querySelectorAll("input[data-webauthn],textarea[data-webauthn],script[data-webauthn]");
         for (let i = 0; i < list.length; i++) {
-            let el = list[i];
-            let isScript = el.tagName === 'SCRIPT';
+            const el = list[i];
+            const isScript = el.tagName === 'SCRIPT';
             if (isScript && (el as HTMLScriptElement).type !== 'application/json') {
-                throw new WebAuthnError(ErrorType.BadConfig, 'Expecting application/json script with data-webauthn');
+                throw new WebAuthnError('bad-config', 'Expecting application/json script with data-webauthn');
             }
             const rawJson: string | null = isScript ? el.textContent : (el).getAttribute('data-webauthn');
             if (rawJson === null) {
-                throw new WebAuthnError(ErrorType.BadConfig, 'Missing JSON in data-webauthn');
+                throw new WebAuthnError('bad-config', 'Missing JSON in data-webauthn');
             }
             const json = JSON.parse(rawJson) as AutoConfig;
             if (!json) {
-                throw new WebAuthnError(ErrorType.BadConfig, 'invalid JSON in data-webauthn on element');
+                throw new WebAuthnError('bad-config', 'invalid JSON in data-webauthn on element');
             }
             if (!isScript && json.formField === undefined) {
                 json.formField = el as HTMLInputElement | HTMLTextAreaElement;
@@ -206,7 +208,7 @@ async function auto()
 
 }
 
-auto().catch(
+WebAuthnUI.autoPromise = auto().catch(
     (e) => {
         if(console && console.error) {
             console.error(e);

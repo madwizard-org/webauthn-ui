@@ -1,3 +1,11 @@
+import {
+    JsonAuthenticatorAssertionResponse,
+    JsonAuthenticatorAttestationResponse,
+    JsonPublicKeyCredential,
+    JsonPublicKeyCredentialCreationOptions,
+    JsonPublicKeyCredentialRequestOptions
+} from "../src/types";
+
 export const urlUserId = "cGJ6WVlzRXNF";
 export const rawUserId = new Uint8Array([112, 98, 122, 89, 89, 115, 69, 115, 69]);
 
@@ -25,3 +33,90 @@ export const urlSignature = "tkbIGwoeqhwQ-EoCOhR9zCEqR8HHis9Gcpa_YSfPvQw";
 export const rawSignature = new Uint8Array([182,70,200,27,10,30,170,28,16,248,74,2,58,20,125,204,33,42,71,193,199,138,207,70,114,150,191,97,39,207,189,12]);
 
 export const iconUrl = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+export const jsonCreateOptions: JsonPublicKeyCredentialCreationOptions = {
+    rp: {
+        name: "WebAuthn demo"
+    },
+    user: {
+        name: "freddy",
+        id: urlUserId,
+        displayName: "Freddy fruitcake"
+    },
+    challenge: urlChallenge,
+    pubKeyCredParams: [
+        {
+            "type": "public-key",
+            "alg": -7
+        }
+    ]
+};
+export const rawCreateOptions: PublicKeyCredentialCreationOptions = {
+    rp: {
+        "name": "WebAuthn demo"
+    },
+    user: {
+        name: "freddy",
+        "id": rawUserId,
+        "displayName": "Freddy fruitcake"
+    },
+    challenge: rawChallenge,
+    pubKeyCredParams: [
+        {
+            "type": "public-key",
+            "alg": -7
+        }
+    ]
+};
+export const jsonCreateResponse: JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse> = {
+    id: urlCredentialId,
+    type: 'public-key',
+    rawId: urlCredentialId,
+    response: {
+        clientDataJSON: urlClientDataJson,
+        attestationObject: urlAttestationObject
+    }
+};
+export const rawCreateResponse: PublicKeyCredential = {
+    id: urlCredentialId,
+    type: 'public-key',
+    rawId: rawCredentialId,
+    response: {
+        clientDataJSON: rawClientDataJson,
+        attestationObject: rawAttestationObject
+    } as AuthenticatorAttestationResponse,
+    getClientExtensionResults() {
+        return {};
+    }
+};
+export const jsonRequestOptions: JsonPublicKeyCredentialRequestOptions = {
+    challenge: urlChallenge
+};
+export const rawRequestOptions: PublicKeyCredentialRequestOptions = {
+    challenge: rawChallenge
+};
+export const jsonRequestResponse: JsonPublicKeyCredential<JsonAuthenticatorAssertionResponse> = {
+    id: urlCredentialId,
+    type: 'public-key',
+    rawId: urlCredentialId,
+    response: {
+        clientDataJSON: urlClientDataJson,
+        authenticatorData: urlAuthenticatorData,
+        signature: urlSignature,
+        userHandle: null
+    }
+};
+export const rawRequestResponse: PublicKeyCredential = {
+    id: urlCredentialId,
+    type: 'public-key',
+    rawId: rawCredentialId,
+    response: {
+        clientDataJSON: rawClientDataJson,
+        authenticatorData: rawAuthenticatorData,
+        signature: rawSignature,
+        userHandle: null
+    } as AuthenticatorAssertionResponse,
+    getClientExtensionResults() {
+        return {};
+    }
+};

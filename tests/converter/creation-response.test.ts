@@ -3,7 +3,7 @@ import {Converter} from "../../src/converter";
 
 
 test('Attestation response converter', () => {
-    expect(Converter.convertAttestationPublicKeyCredential(
+    expect(Converter.convertCreationResponse(
         {
             id: fixtures.urlCredentialId,
             type: 'public-key',

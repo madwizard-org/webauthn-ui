@@ -32,7 +32,7 @@ test('Assertion mininal response converter', () => {
         }
     }
 
-    expect(Converter.convertAssertionPublicKeyCredential(credential)).toEqual(converted);
+    expect(Converter.convertRequestResponse(credential)).toEqual(converted);
 
 
 });
@@ -68,6 +68,6 @@ test('Assertion full response converter', () => {
         }
     }
 
-    expect(Converter.convertAssertionPublicKeyCredential(credential)).toEqual(converted);
+    expect(Converter.convertRequestResponse(credential)).toEqual(converted);
 
 });

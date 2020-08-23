@@ -1,4 +1,4 @@
-import {ErrorType, WebAuthnError} from "./error";
+import { WebAuthnError} from "./error";
 
 export function encode(arraybuffer: ArrayBuffer): string {
 
@@ -31,7 +31,7 @@ export function decode(base64: string): ArrayBuffer {
             base64 += "=";
             break;
         case 1:
-            throw new WebAuthnError(ErrorType.ParseError);
+            throw new WebAuthnError('parse-error');
     }
 
     const bin = window.atob(base64);
