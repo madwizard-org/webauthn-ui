@@ -6,7 +6,7 @@ beforeEach(() => {
 
 function mockWebAuthn()
 {
-    let pkc : any = (window as any).PublicKeyCredential = function () {};
+    const pkc : any = (window as any).PublicKeyCredential = function () {};
     pkc.isUserVerifyingPlatformAuthenticatorAvailable = async (): Promise<boolean> => false;
 }
 

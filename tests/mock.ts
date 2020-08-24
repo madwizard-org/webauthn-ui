@@ -7,8 +7,7 @@ export class ReadyStateMocker
 
     constructor() {
         // Setup fake DOM readyState
-        let that = this;
-        Object.defineProperty(document, 'readyState', { get() { return that.state; }})
+        Object.defineProperty(document, 'readyState', { get: () => this.state });
     }
 
     resetLoading() {
@@ -42,7 +41,7 @@ export async function importModule() : Promise<LoadedModule>
 {
     const module = await import('../src/index');
 
-    let obj : LoadedModule = {
+    const obj : LoadedModule = {
         WebAuthnUI: module.default,
         autoSucceeded : null,
         autoPromise: module.default.autoPromise

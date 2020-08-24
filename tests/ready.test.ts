@@ -2,7 +2,7 @@ import { ready, loaded } from '../src/ready';
 import {ReadyStateMocker} from "./mock";
 
 
-let stateMock = new ReadyStateMocker();
+const stateMock = new ReadyStateMocker();
 
 beforeEach(() => {
     stateMock.resetLoading();

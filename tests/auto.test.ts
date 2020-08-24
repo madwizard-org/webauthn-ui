@@ -1,7 +1,5 @@
 import {importModule, ReadyStateMocker} from "./mock";
-import WebAuthnUI from "../src";
 import * as fixtures from "./fixtures";
-import {jsonCreateResponse} from "./fixtures";
 import {Config} from "../src/types";
 
 const stateMocker = new ReadyStateMocker();
@@ -117,7 +115,7 @@ test('Create request via JSON script (success case)', async () => {
 
 test('postUnsupported false', async () => {
 
-    let input = document.createElement('input');
+    const input = document.createElement('input');
     input.type = 'hidden';
     input.value = '';
     input.setAttribute('data-webauthn', JSON.stringify({

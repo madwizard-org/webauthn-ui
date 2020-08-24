@@ -6,7 +6,7 @@ function waitReadyState(alreadyDone: boolean, eventDispatcher: Window|Document, 
     }
 
     return new Promise((resolve) => {
-        let readyFunc = () => {
+        const readyFunc = () => {
             eventDispatcher.removeEventListener(eventName, readyFunc);
             resolve();
         };
@@ -16,10 +16,10 @@ function waitReadyState(alreadyDone: boolean, eventDispatcher: Window|Document, 
 
 export function ready<T>(): Promise<void> {
     return waitReadyState(document.readyState !== 'loading', document, 'DOMContentLoaded');
-};
+}
 
 
 export function loaded(): Promise<void> {
     return waitReadyState(document.readyState === 'complete', window, 'load');
-};
+}
 

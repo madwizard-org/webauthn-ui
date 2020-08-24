@@ -1,6 +1,5 @@
 import WebAuthnUI from "../src";
 import * as fixtures from "./fixtures";
-import type {JsonPublicKeyCredentialCreationOptions,} from "../src/types";
 
 beforeEach(() => {
     (navigator as any).credentials = undefined;

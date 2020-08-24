@@ -1,4 +1,3 @@
-import {JsonPublicKeyCredentialDescriptor} from '../../src/types';
 import * as fixtures from '../fixtures';
 import {Converter} from "../../src/converter";
 

@@ -5,7 +5,7 @@ import {Converter} from "../../src/converter";
 
 test('Assertion mininal response converter', () => {
 
-    let credential : PublicKeyCredential = {
+    const credential : PublicKeyCredential = {
         id: fixtures.urlCredentialId,
         type: 'public-key',
         rawId: fixtures.rawCredentialId,
@@ -20,7 +20,7 @@ test('Assertion mininal response converter', () => {
         }
     };
 
-    let converted = {
+    const converted = {
         id: fixtures.urlCredentialId,
         type: 'public-key',
         rawId: fixtures.urlCredentialId,
@@ -41,7 +41,7 @@ test('Assertion mininal response converter', () => {
 
 test('Assertion full response converter', () => {
 
-    let credential : PublicKeyCredential = {
+    const credential : PublicKeyCredential = {
         id: fixtures.urlCredentialId,
         type: 'public-key',
         rawId: fixtures.rawCredentialId,
@@ -56,7 +56,7 @@ test('Assertion full response converter', () => {
         }
     };
 
-    let converted = {
+    const converted = {
         id: fixtures.urlCredentialId,
         type: 'public-key',
         rawId: fixtures.urlCredentialId,
