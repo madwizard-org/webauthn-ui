@@ -1,42 +1,37 @@
-import WebAuthnUI from "../src";
+import WebAuthnUI from '../src';
 
 beforeEach(() => {
-    (window as any).PublicKeyCredential = undefined;
+  (window as any).PublicKeyCredential = undefined;
 });
 
-function mockWebAuthn()
-{
-    const pkc : any = (window as any).PublicKeyCredential = function () {};
-    pkc.isUserVerifyingPlatformAuthenticatorAvailable = async (): Promise<boolean> => false;
+function mockWebAuthn() {
+  const pkc : any = () => {};
+  (window as any).PublicKeyCredential = pkc;
+  pkc.isUserVerifyingPlatformAuthenticatorAvailable = async (): Promise<boolean> => false;
 }
 
-
 test('WebAuthn unsupported', () => {
-
-    expect(WebAuthnUI.isSupported()).toBe(false);
+  expect(WebAuthnUI.isSupported()).toBe(false);
 });
 
 test('WebAuthn supported', () => {
-    mockWebAuthn();
+  mockWebAuthn();
 
-    expect(WebAuthnUI.isSupported()).toBe(true);
+  expect(WebAuthnUI.isSupported()).toBe(true);
 });
 
 test('UVPA supported', async () => {
-    mockWebAuthn();
+  mockWebAuthn();
 
-    await expect(WebAuthnUI.isUVPASupported()).resolves.toBe(false);
+  await expect(WebAuthnUI.isUVPASupported()).resolves.toBe(false);
 });
-
 
 test('Test setFeatureCssClasses', async () => {
-    mockWebAuthn();
+  mockWebAuthn();
 
-    document.body.innerHTML =`<div id="test" class="webauthn-detect"></div>`
+  document.body.innerHTML = '<div id="test" class="webauthn-detect"></div>';
 
-    await WebAuthnUI.setFeatureCssClasses("#test");
+  await WebAuthnUI.setFeatureCssClasses('#test');
 
-    expect(document.querySelector('#test')!.classList.value).toBe('webauthn-detect webauthn-supported webauthn-uvpa-unsupported');
-
+  expect(document.querySelector('#test')!.classList.value).toBe('webauthn-detect webauthn-supported webauthn-uvpa-unsupported');
 });
-

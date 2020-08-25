@@ -1,5 +1,6 @@
-/node_modules
-/dist
-/src/*.js
-/src/*.js.map
-/.idea
+/*
+!/dist/es/webauthn-ui*
+!/dist/umd/webauthn-ui*
+!/types
+!/README.md
+!/LICENSE

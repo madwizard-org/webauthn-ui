@@ -1,8 +1,9 @@
-import {ErrorType} from "./error";
+import { ErrorType } from './error';
 
 type BaseConfig = {
     trigger?: 'domready' | 'load';
     delay?: number;
+    debug?: boolean;
 };
 
 interface CreateConfig extends BaseConfig {
@@ -24,12 +25,10 @@ export type AutoConfig =
     submitForm?: boolean;
 } & Config;
 
-
 export interface SuccessResponse {
     status: 'ok';
     credential: JsonAttestationPublicKeyCredential|JsonAssertionPublicKeyCredential;
 }
-
 
 export interface FailureResponse {
     status: 'failed';
@@ -86,20 +85,20 @@ export interface JsonPublicKeyCredentialUserEntity {
 }
 
 export interface JsonPublicKeyCredentialParameters {
-    type: "public-key";
+    type: 'public-key';
     alg: number;
 }
 
 export interface JsonPublicKeyCredentialDescriptor {
-    type: "public-key";
+    type: 'public-key';
     id: string;
-    transports?: Array<"usb" | "nfc" | "ble" | "internal">;  // TODO: in newer spec this is a string, not an enum.
+    transports?: Array<'usb' | 'nfc' | 'ble' | 'internal'>; // TODO: in newer spec this is a string, not an enum.
 }
 
 export interface JsonAuthenticatorSelectionCriteria {
-    authenticatorAttachment?: "platform" | "cross-platform";
+    authenticatorAttachment?: 'platform' | 'cross-platform';
     requireResidentKey?: boolean;
-    userVerification?: "required" | "preferred" | "discouraged";
+    userVerification?: 'required' | 'preferred' | 'discouraged';
 }
 
 export interface JsonPublicKeyCredentialCreationOptions {
@@ -112,8 +111,6 @@ export interface JsonPublicKeyCredentialCreationOptions {
     timeout?: number;
     excludeCredentials?: JsonPublicKeyCredentialDescriptor[];
     authenticatorSelection?: JsonAuthenticatorSelectionCriteria;
-    attestation?: "none" | "indirect" | "direct";
+    attestation?: 'none' | 'indirect' | 'direct';
     extensions?: any;
 }
-
-

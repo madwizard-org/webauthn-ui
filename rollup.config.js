@@ -7,14 +7,22 @@ const devMode = (env === 'development');
 const banner = `/*! webauthn-ui library (C) 2018 - ${new Date().getFullYear()} Thomas Bleeker (www.madwizard.org) - MIT license */\n`;
 
 function cleanup() {
+    // Note: it is allowed to remove the (rather large) tslib 0BSD license notice.
+    // See https://github.com/microsoft/tslib/issues/47
+
     return {
         name: 'cleanup',
         renderChunk(code) {
+            code = code.replace(/\/\*![^M\/]+Microsoft Corporation[\s\S]+?\*\//, "/* Microsoft tslib 0BSD licensed */");
             code = code.replace(/\r\n/g, "\n");
             return {code, map:null};
         }
     }
 }
+
+const tsPluginOpts = {
+    useTsconfigDeclarationDir: true
+};
 
 let builds =
     [
@@ -27,7 +35,7 @@ let builds =
                 banner: banner,
                 sourcemap: devMode,
             },
-            plugins: [typescript(),  cleanup()]
+            plugins: [typescript(tsPluginOpts),  cleanup()]
         },
         {
             input: './src/index.ts',
@@ -37,16 +45,14 @@ let builds =
                 banner: banner,
                 sourcemap: devMode,
             },
-            plugins: [typescript(), cleanup()]
+            plugins: [typescript(tsPluginOpts), cleanup()]
         },
 
     ];
 
 if (!devMode) {
 
-    // Note: commments (including copyright comments) are stripped in minified mode.
-    // The only external code that is bundled is from tslib. It is allowed to leave out its 0BSD licence
-    // See https://github.com/microsoft/tslib/issues/47
+
     builds = builds.concat([
             {
                 input: './src/index.ts',
@@ -58,7 +64,7 @@ if (!devMode) {
                     sourcemap: devMode,
 
                 },
-                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}}), cleanup()]
+                plugins: [typescript(tsPluginOpts), terser({output: { comments: /webauthn-ui/}}), cleanup()]
             },
             {
                 input: './src/index.ts',
@@ -68,7 +74,7 @@ if (!devMode) {
                     banner: banner,
                     sourcemap: devMode,
                 },
-                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}}), cleanup()]
+                plugins: [typescript(tsPluginOpts), terser({output: { comments: /webauthn-ui/}}), cleanup()]
             }
 
         ]

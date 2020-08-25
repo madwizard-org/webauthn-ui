@@ -1,19 +1,18 @@
-import {importModule, ReadyStateMocker} from "./mock";
-import * as fixtures from "./fixtures";
-import {Config} from "../src/types";
+import { importModule, ReadyStateMocker } from './mock';
+import * as fixtures from './fixtures';
+import { Config } from '../src/types';
 
 const stateMocker = new ReadyStateMocker();
 
 beforeEach(() => {
-    jest.resetModules();
-    stateMocker.resetLoading();
+  jest.resetModules();
+  stateMocker.resetLoading();
 
-    (navigator as any).credentials = undefined;
-    (window as any).PublicKeyCredential = undefined;
+  (navigator as any).credentials = undefined;
+  (window as any).PublicKeyCredential = undefined;
 });
 
-const testHtml =
-    `<script type="application/json" data-webauthn>
+const testHtml = `<script type="application/json" data-webauthn>
             {
                 "formField": "#webauthn-response",
                 "type": "create",
@@ -33,102 +32,93 @@ const testHtml =
         <input type="hidden" id="webauthn-response">`;
 
 test('Automatic css classes', async () => {
+  document.body.innerHTML = '<div id="test" class="webauthn-detect"></div>';
 
-    document.body.innerHTML =`<div id="test" class="webauthn-detect"></div>`
+  // Import module
+  await import('../src/index');
 
-    // Import module
-    await import('../src/index');
+  // No auto code run yet
+  expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect');
 
-    // No auto code run yet
-    expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect');
+  // Document loaded
+  await stateMocker.enterInteractive();
 
-    // Document loaded
-    await stateMocker.enterInteractive();
-
-    /// Auto code run
-    expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect webauthn-unsupported webauthn-uvpa-unsupported');
-
+  /// Auto code run
+  expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect webauthn-unsupported webauthn-uvpa-unsupported');
 });
 
 test('Create request via JSON script (unsupported case)', async () => {
+  stateMocker.resetLoading();
 
-    stateMocker.resetLoading();
+  document.body.innerHTML = testHtml;
 
-    document.body.innerHTML = testHtml;
+  const input = document.getElementById('webauthn-response') as HTMLInputElement;
+  const mod = await importModule();
 
-    const input = document.getElementById('webauthn-response') as HTMLInputElement;
-    const mod = await importModule();
+  expect(mod.autoSucceeded).toBe(null);
+  expect(input.value).toBe('');
 
-    expect(mod.autoSucceeded).toBe(null);
-    expect(input.value).toBe('');
+  await stateMocker.enterInteractive();
 
-    await stateMocker.enterInteractive();
+  // No auto code run yet
+  expect(mod.autoSucceeded).toBe(null);
+  expect(input.value).toBe('');
 
-    // No auto code run yet
-    expect(mod.autoSucceeded).toBe(null);
-    expect(input.value).toBe('');
+  await stateMocker.enterComplete();
 
-    await stateMocker.enterComplete();
+  /// Auto code run, ensure complete (wait for timers etc.):
+  await mod.autoPromise;
 
-    /// Auto code run, ensure complete (wait for timers etc.):
-    await mod.autoPromise;
-
-    expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe('{"status":"failed","error":"unsupported"}');
+  expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe('{"status":"failed","error":"unsupported"}');
 });
 
 test('Create request via JSON script (success case)', async () => {
+  const create = jest.fn().mockReturnValue(Promise.resolve(fixtures.rawCreateResponse));
+  (navigator as any).credentials = {
+    create,
+  };
+  (window as any).PublicKeyCredential = () => {};
 
-    const create = jest.fn().mockReturnValue(Promise.resolve(fixtures.rawCreateResponse));
-    (navigator as any).credentials = {
-        create
-    };
-    (window as any).PublicKeyCredential = function () {}
+  document.body.innerHTML = testHtml;
 
+  const input = document.getElementById('webauthn-response') as HTMLInputElement;
+  const mod = await importModule();
 
+  expect(mod.autoSucceeded).toBe(null);
+  expect(input.value).toBe('');
 
-    document.body.innerHTML = testHtml;
+  await stateMocker.enterInteractive();
 
-    const input = document.getElementById('webauthn-response') as HTMLInputElement;
-    const mod = await importModule();
+  // No auto code run yet
+  expect(mod.autoSucceeded).toBe(null);
+  expect(input.value).toBe('');
 
-    expect(mod.autoSucceeded).toBe(null);
-    expect(input.value).toBe('');
+  await stateMocker.enterComplete();
 
-    await stateMocker.enterInteractive();
+  /// Auto code run, ensure complete (wait for timers etc.):
+  await mod.autoPromise;
 
-    // No auto code run yet
-    expect(mod.autoSucceeded).toBe(null);
-    expect(input.value).toBe('');
-
-    await stateMocker.enterComplete();
-
-    /// Auto code run, ensure complete (wait for timers etc.):
-    await mod.autoPromise;
-
-    expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe(
-        '{"status":"ok","credential":{"type":"public-key","id":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q",' +
-        '"rawId":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q","response":{"clientDataJSON":"eyJ0ZXN0IjoiZGF0YSJ9",' +
-        '"attestationObject":"MiNbx5u7qFgnfMV3-GcemtZP-NmMnrhFQN0QFXeHwfs"}}}'
-    );
+  expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe(
+    '{"status":"ok","credential":{"type":"public-key","id":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q",'
+        + '"rawId":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q","response":{"clientDataJSON":"eyJ0ZXN0IjoiZGF0YSJ9",'
+        + '"attestationObject":"MiNbx5u7qFgnfMV3-GcemtZP-NmMnrhFQN0QFXeHwfs"}}}',
+  );
 });
 
-
 test('postUnsupported false', async () => {
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.value = '';
+  input.setAttribute('data-webauthn', JSON.stringify({
+    type: 'create',
+    request: fixtures.jsonCreateOptions,
+    postUnsupported: false,
+  } as Config));
+  document.body.append(input);
+  await stateMocker.enterComplete();
 
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.value = '';
-    input.setAttribute('data-webauthn', JSON.stringify({
-        type: 'create',
-        request: fixtures.jsonCreateOptions,
-        postUnsupported: false
-    } as Config));
-    document.body.append(input);
-    await stateMocker.enterComplete();
+  const mod = await importModule();
+  await mod.autoPromise;
 
-    const mod = await importModule();
-    await mod.autoPromise;
-
-    expect(input.value).toBe('');
-
-})
+  expect(input.value).toBe('');
+});

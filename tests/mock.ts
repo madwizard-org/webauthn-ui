@@ -1,32 +1,27 @@
 import WebAuthnUI from '../src';
 
-
-export class ReadyStateMocker
-{
+export class ReadyStateMocker {
     state = 'loading';
 
     constructor() {
-        // Setup fake DOM readyState
-        Object.defineProperty(document, 'readyState', { get: () => this.state });
+      // Setup fake DOM readyState
+      Object.defineProperty(document, 'readyState', { get: () => this.state });
     }
 
     resetLoading() {
-        this.state = 'loading';
+      this.state = 'loading';
     }
 
-
-    async enterInteractive()
-    {
-        // Document loaded
-        this.state = 'interactive';
-        await document.dispatchEvent(new Event("DOMContentLoaded"));
+    async enterInteractive() {
+      // Document loaded
+      this.state = 'interactive';
+      await document.dispatchEvent(new Event('DOMContentLoaded'));
     }
 
-    async enterComplete()
-    {
-        // Document loaded
-        this.state = 'complete';
-        await window.dispatchEvent(new Event("load"));
+    async enterComplete() {
+      // Document loaded
+      this.state = 'complete';
+      await window.dispatchEvent(new Event('load'));
     }
 }
 
@@ -36,18 +31,16 @@ interface LoadedModule {
     autoPromise: Promise<void>;
 }
 
+export async function importModule() : Promise<LoadedModule> {
+  const module = await import('../src/index');
 
-export async function importModule() : Promise<LoadedModule>
-{
-    const module = await import('../src/index');
-
-    const obj : LoadedModule = {
-        WebAuthnUI: module.default,
-        autoSucceeded : null,
-        autoPromise: module.default.autoPromise
-    };
-    module.default.autoPromise
-        .then(() => { obj.autoSucceeded = true; } )
-        .catch(() => { obj.autoSucceeded = false; } );
-    return obj;
+  const obj : LoadedModule = {
+    WebAuthnUI: module.default,
+    autoSucceeded: null,
+    autoPromise: module.default.autoPromise,
+  };
+  module.default.autoPromise
+    .then(() => { obj.autoSucceeded = true; })
+    .catch(() => { obj.autoSucceeded = false; });
+  return obj;
 }

@@ -12,6 +12,7 @@
         "strict": true,
         "moduleResolution": "node",
         "declaration": true,
+        "declarationDir": "types",
         "esModuleInterop": true
     },
     "files": [
