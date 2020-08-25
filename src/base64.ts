@@ -1,7 +1,9 @@
-export function encode(arraybuffer: ArrayBuffer) {
+import { WebAuthnError} from "./error";
 
-    let buffer = new Uint8Array(arraybuffer);
-    let binary: string = '';
+export function encode(arraybuffer: ArrayBuffer): string {
+
+    const buffer = new Uint8Array(arraybuffer);
+    let binary = '';
     for (let i = 0; i < buffer.length; i++) {
         binary += String.fromCharCode(buffer[i]);
     }
@@ -17,7 +19,7 @@ export function encode(arraybuffer: ArrayBuffer) {
     return encoded;
 }
 
-export function decode(base64) {
+export function decode(base64: string): ArrayBuffer {
 
     base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
 
@@ -29,12 +31,12 @@ export function decode(base64) {
             base64 += "=";
             break;
         case 1:
-            throw 'Invalid base64url string';
+            throw new WebAuthnError('parse-error');
     }
 
-    let bin = window.atob(base64);
+    const bin = window.atob(base64);
 
-    let buffer = new Uint8Array(bin.length);
+    const buffer = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) {
         buffer[i] = bin.charCodeAt(i);
     }

@@ -1,5 +1,5 @@
 import {terser} from "rollup-plugin-terser";
-import typescript from 'rollup-plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 
 const env = process.env.NODE_ENV;
 const devMode = (env === 'development');
@@ -24,9 +24,10 @@ let builds =
                 file: 'dist/umd/webauthn-ui.js',
                 format: 'umd',
                 name: 'WebAuthnUI',
-                banner: banner
+                banner: banner,
+                sourcemap: devMode,
             },
-            plugins: [typescript(), cleanup()]
+            plugins: [typescript(),  cleanup()]
         },
         {
             input: './src/index.ts',
@@ -36,7 +37,7 @@ let builds =
                 banner: banner,
                 sourcemap: devMode,
             },
-            plugins: [typescript()]
+            plugins: [typescript(), cleanup()]
         },
 
     ];
@@ -57,7 +58,7 @@ if (!devMode) {
                     sourcemap: devMode,
 
                 },
-                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}})]
+                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}}), cleanup()]
             },
             {
                 input: './src/index.ts',
@@ -67,7 +68,7 @@ if (!devMode) {
                     banner: banner,
                     sourcemap: devMode,
                 },
-                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}})]
+                plugins: [typescript(), terser({output: { comments: /webauthn-ui/}}), cleanup()]
             }
 
         ]

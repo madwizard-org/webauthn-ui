@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "es6",
+        "module": "esNext",
         "target": "es5",
         "importHelpers": true,
         "lib": [
@@ -9,8 +9,10 @@
             "es2015.promise"
         ],
         "sourceMap": true,
+        "strict": true,
         "moduleResolution": "node",
-        "declaration": true
+        "declaration": true,
+        "esModuleInterop": true
     },
     "files": [
         "src/index.ts"
