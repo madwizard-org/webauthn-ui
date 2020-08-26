@@ -5,7 +5,7 @@
 [![Version](https://img.shields.io/npm/v/webauthn-ui.svg)](https://www.npmjs.com/package/webauthn-ui)
 [![License](https://img.shields.io/npm/l/webauthn-ui.svg)](https://www.npmjs.com/package/webauthn-ui)
 
-**Work in progress - Use for testing purposes only**
+*Beta version: library is functional but documentation not yet complete*
 
 **webauthn-ui** is a browser JS library that functions as a translator between the *W3C Web Authentication API* that modern browsers support and a json compatible version that can be send through form posts or XHR calls.
 
