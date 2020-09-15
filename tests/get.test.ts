@@ -1,6 +1,5 @@
-import WebAuthnUI from '../src';
+import { WebAuthnUI, WebAuthnError } from '../src';
 import * as fixtures from './fixtures';
-import { WebAuthnError } from '../src/error';
 
 beforeEach(() => {
   (navigator as any).credentials = undefined;

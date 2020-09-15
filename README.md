@@ -5,8 +5,6 @@
 [![Version](https://img.shields.io/npm/v/webauthn-ui.svg)](https://www.npmjs.com/package/webauthn-ui)
 [![License](https://img.shields.io/npm/l/webauthn-ui.svg)](https://www.npmjs.com/package/webauthn-ui)
 
-*Beta version: library is functional but documentation not yet complete*
-
 **webauthn-ui** is a browser JS library that functions as a translator between the *W3C Web Authentication API* that modern browsers support and a json compatible version that can be send through form posts or XHR calls.
 
 It can also handle some auxilliary tasks such as initiating the WebAuthn requests, detecting support and posting the response in a hidden form field.
@@ -42,7 +40,7 @@ You can use the ES module with the `import` statement in your main code.
 import 'webauthn-ui';
 
 // Or if you need access to the WebAuthnUI class:
-import WebAuthnUI from 'webauthn-ui';
+import { WebAuthnUI } from 'webauthn-ui';
 ```
 
 ### UMD module
@@ -64,14 +62,15 @@ require('es6-promise')
 require('webauthn-ui');
 
 // Or if you need access to the WebAuthnUI class:
-const WebAuthnUI = require('webauthn-ui');
+const WebAuthnUI = require('webauthn-ui').WebAuthnUI;
+
+
 ```
 
 
 ## Use
 
-
-### Automatic 
+### Automatic mode 
 
 The easiest way to use the library is to add a `data-webauthn` to an input element with a json configuration as the attribute's value.  When the page is loaded it will automatically initiate the WebAuthn request specified in the json data without the need for any custom JavaScript. The response will be put in the field's value and the form submitted automatically (by default).
 
@@ -125,4 +124,112 @@ Example WebAuthn registration:
 </form>
 ```
 
+Both methods will ask the client to create a new credential and posts the result (both on success and failure) as a 
+serialized json string in the hidden form input. On success, the json structure will be an object with a `status` field 
+set to the string `"ok"`, and a `"credential"` field set to the 
+[PublicKeyCredential](https://www.w3.org/TR/webauthn/#publickeycredential) result of the WebAuthn request. The structure
+of this object is the same as defined in the WebAuthn standard, but with all binary ArrayBuffers converted to base64url
+encoded strings. An example of a successful response looks like this (values are shortened for display purposes):
+```json
+{
+    "status": "ok",
+    "credential": {
+        "type": "public-key",
+        "id": "HlmkAY_zkPN0_ZWdlvOKjrJsYrBC-WeqV2vQayJQRVD4JvA7ttK4Zv4ivRMM3B8273Gt_bOcDTCIY_HIHdXQ_Q",
+        "rawId": "HlmkAY_zkPN0_ZWdlvOKjrJsYrBC-WeqV2vQayJQRVD4JvA7ttK4Zv4ivRMM3B8273Gt_bOcDTCIY_HIHdXQ_Q",
+        "response": {
+            "clientDataJSON": "eyJjaGFsbGVuZ2UiOiI3YjFtNm4yS2dNQ......IsInR5cGUiOiJ3ZWJhdXRobi5jcmVhdGUifQ",
+            "attestationObject": "o2NmbXRmcGFja2VkZ2F0dFN0...DvLFRA5Bn3dGgzy"
+        }
+    }
+}
+```
 
+In case of failure, the result will be an object with the `status` field set to the string `"failed"` and an `error` 
+field set to a string indicating the type of error. For example:
+```json
+{
+    "status": "failed",
+    "error": "dom-not-allowed"
+}
+```
+
+#### Options for automatic mode
+
+| Field            | Type                           | Required | Meaning  |
+|------------------|--------------------------------|----------|-----------------------------------------------------------------------------|
+| type             | 'create'\|'get'                 | Yes      | The type of credential request to perform: create or get a credential. |
+| request          | object                         | Yes      | The request options for create/get credential as specified in the WebAuthn standard but with ArrayBuffers converted to base64url strings. |
+| formField        | string selector or DOM element | Yes/No   | The input field to set save the result in. Not required if data-webauthn attribute is set on an input element. Can also be a textarea for debugging (in combination with submitForm = false) |
+| trigger          | 'domready'\|'load' (default)    | No       | Wait for either DOM ready event or DOM loaded event (default) before asking for the credential. |
+| delay            | integer (milliseconds)         | No       | Delay after trigger event before asking for credential. | 
+| debug            | boolean (default false)        | No       | In case of error log error to console for debugging purposes. |
+| postUnsupported  | boolean (default true)         | No       | When WebAuthn is unsupported by the client, post an 'unsupported' error response. When false, no action will be taken on unsupported clients. |
+| submitForm       | booekan (default true)         | No       | Submit form after setting the input field to the response. When false, only the input field is set but the form is not submitted. |
+
+### Manual mode
+
+Automatic mode is useful if you want to write minimal code and a form post with the response is suitable for your setup.
+If you want more flexibility, have a single page web application or want to post the response using javascript you can
+manually call the library. It will stil take care of the ArrayBuffer <-> base64url conversion for you.
+
+Use `WebAuthnUI.createCredential` to create a credential, it works similar to `navigator.credentials.create`. On error,
+a WebAuthnUI 
+```js
+
+import WebAuthnUI from 'webauthn-ui';
+
+let request = {
+    "rp": {
+        "name": "WebAuthn demo"
+    },
+    "user": {
+        "name": "freddy",
+        "id": "cGJ6WVlzRXNF",
+        "displayName": "Freddy fruitcake"
+    },
+    "challenge": "7b1m6n2KgMAuTp-FbOAl6sb0gD_5HZITqDF7ld8tl28",
+    "pubKeyCredParams": [
+        {
+            "type": "public-key",
+            "alg": -7
+        }
+    ]
+};
+
+try {
+    let result = await WebAuthnUI.createCredential(request);
+    // Success
+    console.log(result);
+} catch(error) {
+    // Failure
+    console.error(error);
+}
+```
+
+To request a credential assertion, use `WebAuthnUI.getCredential` in the same manner.
+
+### WebAuthnError
+
+In case of failure the functions throw an error of type WebAuthnError (this class is exported by the module as well).
+The `name` field in this error indicates the error type. The possible error values are (might be extended in the future):
+
+| Error value        | Type of error                          |
+| ------------------ | -------------------------------------- |
+| unsupported        | WebAuthn is not supported by client    |
+| parse-error        | Parse error (e.g. wrong base64url)     |
+| bad-config         | Configuration is incorrect             |
+| dom-not-allowed    | DOM NotAllowedError                    |
+| dom-security       | DOM SecurityError                      |
+| dom-not-supported  | DOM NotSupportedError                  |
+| dom-abort          | DOM AbortError                         |
+| dom-invalid-state  | DOM InvalidStateError                  |
+| dom-unknown        | Other DOM error                        |
+| unknown            | Unknown error                          |
+
+The `unsupported` error is returned by webauthn-ui if the client does not support WebAuthn. This allows graceful handling
+of older browsers such as IE. 
+
+The `innerError` field is set to the original error throw, if any.
+
+ 

@@ -1,4 +1,4 @@
-import WebAuthnUI from '../src';
+import { WebAuthnUI } from '../src';
 
 beforeEach(() => {
   (window as any).PublicKeyCredential = undefined;

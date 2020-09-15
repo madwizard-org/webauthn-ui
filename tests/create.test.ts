@@ -1,4 +1,4 @@
-import WebAuthnUI from '../src';
+import { WebAuthnUI } from '../src';
 import * as fixtures from './fixtures';
 
 beforeEach(() => {

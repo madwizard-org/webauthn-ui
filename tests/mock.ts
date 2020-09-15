@@ -1,4 +1,4 @@
-import WebAuthnUI from '../src';
+import { WebAuthnUI } from '../src';
 
 export class ReadyStateMocker {
     state = 'loading';
@@ -35,11 +35,11 @@ export async function importModule() : Promise<LoadedModule> {
   const module = await import('../src/index');
 
   const obj : LoadedModule = {
-    WebAuthnUI: module.default,
+    WebAuthnUI: module.WebAuthnUI,
     autoSucceeded: null,
-    autoPromise: module.default.autoPromise,
+    autoPromise: module.autoPromise,
   };
-  module.default.autoPromise
+  module.autoPromise
     .then(() => { obj.autoSucceeded = true; })
     .catch(() => { obj.autoSucceeded = false; });
   return obj;

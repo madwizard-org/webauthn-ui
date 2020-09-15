@@ -24,7 +24,7 @@ export class WebAuthnError extends Error {
 
     public static fromError(error: any): WebAuthnError {
       let type : ErrorType = 'unknown';
-      let message = 'WebAuthnUI error: ';
+      let message;
       if (error instanceof DOMException) {
         const map : { [key : string] : ErrorType } = {
           NotAllowedError: 'dom-not-allowed',
@@ -34,9 +34,9 @@ export class WebAuthnError extends Error {
           InvalidStateError: 'dom-invalid-state',
         };
         type = map[error.name as keyof typeof map] || 'dom-unknown';
-        message += type;
+        message = type;
       } else {
-        message += `unknown (${error.toString()})`;
+        message = `unknown (${error.toString()})`;
       }
 
       return new WebAuthnError(type, message, error instanceof Error ? error : undefined);
