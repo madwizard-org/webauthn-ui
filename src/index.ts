@@ -10,7 +10,7 @@ import { loaded, ready } from './ready';
 
 import type {
   AutoConfig,
-  Config,
+  Config, FailureResponse,
   JsonAssertionPublicKeyCredential,
   JsonAttestationPublicKeyCredential,
   JsonPublicKeyCredentialCreationOptions,
@@ -26,7 +26,21 @@ export { WebAuthnError };
 
 export const loadEvents = { loaded, ready };
 
+type ElementList = NodeListOf<HTMLElement>|Element[];
+
+function elementSelector(selector : string|Element): ElementList {
+  let items: NodeListOf<HTMLElement>|Element[];
+  if (typeof selector === 'string') {
+    items = document.querySelectorAll(selector);
+  } else {
+    items = [selector];
+  }
+  return items;
+}
+
 export class WebAuthnUI {
+  private static inProgress = false;
+
   public static isSupported() : boolean {
     return typeof window.PublicKeyCredential !== 'undefined';
   }
@@ -74,12 +88,7 @@ export class WebAuthnUI {
   }
 
   public static async setFeatureCssClasses(selector: string|Element): Promise<void> {
-    let items: NodeListOf<HTMLElement>|Element[];
-    if (typeof selector === 'string') {
-      items = document.querySelectorAll(selector);
-    } else {
-      items = [selector];
-    }
+    const items = elementSelector(selector);
     const applyClass = (cls: string) => {
       for (let i = 0; i < items.length; i++) {
         items[i].classList.add(cls);
@@ -91,19 +100,53 @@ export class WebAuthnUI {
     });
   }
 
-  private static async waitConfig(config : Config): Promise<void> {
+  private static async loadConfig(config : AutoConfig): Promise<StatusResponse> {
+    // Wait for DOM ready
     await ready();
-    if (config.trigger !== 'domready') {
-      await loaded();
+    let field = config.formField;
+    if (typeof field === 'string') {
+      const el = document.querySelector(field);
+      if (el === null) {
+        throw new WebAuthnError('bad-config', 'Could not find formField.');
+      }
+      field = el as HTMLTextAreaElement | HTMLInputElement;
     }
-    if (config.delay !== undefined) {
-      await new Promise((x) => setTimeout(x, config.delay));
+
+    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) {
+      throw new WebAuthnError('bad-config', 'formField does not refer to an input element.');
     }
+
+    const submit = config.submitForm !== false;
+    if (!this.isSupported() && config.postUnsupportedImmediately === true) {
+      const response : FailureResponse = { status: 'failed', error: 'unsupported' };
+      this.setForm(field, response, submit);
+      return response;
+    }
+    const newField = field;
+
+    return new Promise<StatusResponse>((resolve) => {
+      const { trigger } = config;
+      let resolved = false;
+      if (trigger.event === 'click') {
+        const targets = elementSelector(config.trigger.element);
+        const handler = async () => {
+          const response = await this.runAutoConfig(config);
+          this.setForm(newField, response, submit);
+          if (!resolved) {
+            resolved = true;
+            resolve(response);
+          }
+        };
+        for (let i = 0; i < targets.length; i++) {
+          targets[i].addEventListener('click', handler);
+        }
+      } else {
+        throw new WebAuthnError('bad-config');
+      }
+    });
   }
 
   private static async startConfig(config: Config): Promise<SuccessResponse> {
-    await this.waitConfig(config);
-
     let credential : JsonAttestationPublicKeyCredential|JsonAssertionPublicKeyCredential;
 
     if (config.type === 'get') {
@@ -120,24 +163,7 @@ export class WebAuthnUI {
     };
   }
 
-  private static async runAutoConfig(config : AutoConfig): Promise<StatusResponse|null> {
-    if (!this.isSupported() && config.postUnsupported === false) {
-      return null;
-    }
-
-    let field = config.formField;
-    if (typeof field === 'string') {
-      const el = document.querySelector(field);
-      if (el === null) {
-        throw new WebAuthnError('bad-config', 'Could not find formField.');
-      }
-      field = el as HTMLTextAreaElement|HTMLInputElement;
-    }
-
-    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) {
-      throw new WebAuthnError('bad-config', 'formField does not refer to an input element.');
-    }
-
+  private static async runAutoConfig(config : AutoConfig): Promise<StatusResponse> {
     let response : StatusResponse;
 
     try {
@@ -155,15 +181,19 @@ export class WebAuthnUI {
         error: (waError ? e.name : WebAuthnError.fromError(e).name),
       };
     }
-    field.value = JSON.stringify(response);
-    if (config.submitForm !== false && field.form) {
-      field.form.submit();
-    }
+
     return response;
   }
 
+  private static setForm(field: HTMLTextAreaElement|HTMLInputElement, response : StatusResponse, submit: boolean): void {
+    field.value = JSON.stringify(response);
+    if (submit && field.form) {
+      field.form.submit();
+    }
+  }
+
   public static async autoConfig(): Promise<void> {
-    const promises: Promise<StatusResponse|null>[] = [];
+    const promises: Promise<StatusResponse>[] = [];
     const list = document.querySelectorAll('input[data-webauthn],textarea[data-webauthn],script[data-webauthn]');
     for (let i = 0; i < list.length; i++) {
       const el = list[i];
@@ -182,20 +212,20 @@ export class WebAuthnUI {
       if (!isScript && json.formField === undefined) {
         json.formField = el as HTMLInputElement | HTMLTextAreaElement;
       }
-      promises.push(this.runAutoConfig(json));
+      promises.push(this.loadConfig(json));
     }
 
     await Promise.all(promises);
   }
 }
 
-async function auto() {
+async function auto() : Promise<void> {
   await ready();
   const list = document.querySelectorAll('.webauthn-detect');
   for (let i = 0; i < list.length; i++) {
     WebAuthnUI.setFeatureCssClasses(list[i]);
   }
-  await WebAuthnUI.autoConfig();
+  return WebAuthnUI.autoConfig();
 }
 
 export const autoPromise = auto().catch(

@@ -1,10 +1,11 @@
 import { importModule, ReadyStateMocker } from './mock';
 import * as fixtures from './fixtures';
-import { Config } from '../src/types';
+import { AutoConfig } from '../src/types';
 
 const stateMocker = new ReadyStateMocker();
 
 beforeEach(() => {
+  document.body.innerHTML = '';
   jest.resetModules();
   stateMocker.resetLoading();
 
@@ -14,9 +15,12 @@ beforeEach(() => {
 
 const testHtml = `<script type="application/json" data-webauthn>
             {
-                "formField": "#webauthn-response",
                 "type": "create",
-                "delay": 10,
+                "trigger": {
+                    "event": "click",
+                    "element": "#trigger-btn"
+                },
+                "formField": "#webauthn-response",             
                 "request": {
                     "rp": { "name": "WebAuthn demo" },
                     "user": {
@@ -29,7 +33,12 @@ const testHtml = `<script type="application/json" data-webauthn>
                 }
             }
         </script>
+        <button id="trigger-btn">start</button>
         <input type="hidden" id="webauthn-response">`;
+
+function triggerButton() {
+  document.getElementById('trigger-btn')!.dispatchEvent(new Event('click'));
+}
 
 test('Automatic css classes', async () => {
   document.body.innerHTML = '<div id="test" class="webauthn-detect"></div>';
@@ -59,14 +68,13 @@ test('Create request via JSON script (unsupported case)', async () => {
   expect(input.value).toBe('');
 
   await stateMocker.enterInteractive();
-
-  // No auto code run yet
-  expect(mod.autoSucceeded).toBe(null);
   expect(input.value).toBe('');
-
   await stateMocker.enterComplete();
 
-  /// Auto code run, ensure complete (wait for timers etc.):
+  expect(input.value).toBe('');
+
+  triggerButton();
+  /// Auto code run, ensure complete
   await mod.autoPromise;
 
   expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe('{"status":"failed","error":"unsupported"}');
@@ -95,7 +103,9 @@ test('Create request via JSON script (success case)', async () => {
 
   await stateMocker.enterComplete();
 
-  /// Auto code run, ensure complete (wait for timers etc.):
+  triggerButton();
+
+  /// Auto code run, ensure complete
   await mod.autoPromise;
 
   expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe(
@@ -105,20 +115,23 @@ test('Create request via JSON script (success case)', async () => {
   );
 });
 
-test('postUnsupported false', async () => {
+test('postUnsupportedImmediately true', async () => {
   const input = document.createElement('input');
   input.type = 'hidden';
   input.value = '';
   input.setAttribute('data-webauthn', JSON.stringify({
     type: 'create',
+    trigger: {
+      event: 'click',
+      element: '#trigger-btn',
+    },
     request: fixtures.jsonCreateOptions,
-    postUnsupported: false,
-  } as Config));
+    postUnsupportedImmediately: true,
+  } as AutoConfig));
   document.body.append(input);
-  await stateMocker.enterComplete();
-
   const mod = await importModule();
+  await stateMocker.enterComplete();
   await mod.autoPromise;
 
-  expect(input.value).toBe('');
+  expect(input.value).toBe('{"status":"failed","error":"unsupported"}');
 });

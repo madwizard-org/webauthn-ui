@@ -1,8 +1,13 @@
 import { ErrorType } from './error';
 
+interface ClickTrigger
+{
+    event: 'click';
+    element: string|HTMLElement;
+}
+
 type BaseConfig = {
-    trigger?: 'domready' | 'load';
-    delay?: number;
+    trigger: ClickTrigger;
     debug?: boolean;
 };
 
@@ -21,7 +26,7 @@ export type Config = CreateConfig | RequestConfig;
 export type AutoConfig =
 {
     formField?: string|HTMLInputElement|HTMLTextAreaElement,
-    postUnsupported?: boolean;
+    postUnsupportedImmediately?: boolean,
     submitForm?: boolean;
 } & Config;
 
