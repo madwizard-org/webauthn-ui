@@ -1,7 +1,7 @@
 import * as base64 from './base64';
 import {
   JsonAssertionPublicKeyCredential, JsonAttestationPublicKeyCredential,
-  JsonAuthenticatorResponse,
+  JsonAuthenticatorResponse, JsonClientExtensionResults, JsonPublicKeyCredential,
   JsonPublicKeyCredentialCreationOptions,
   JsonPublicKeyCredentialRequestOptions,
 } from './types';
@@ -61,6 +61,15 @@ function getCredentialDescListMap() {
   });
 }
 
+function addExtensionOutputs<T extends JsonAuthenticatorResponse>(dest: JsonPublicKeyCredential<T>, pkc: PublicKeyCredential) {
+  const clientExtensionResults = pkc.getClientExtensionResults();
+  if (Object.keys(clientExtensionResults).length > 0) {
+    dest.clientExtensionResults = map(clientExtensionResults, {
+      appid: MapAction.Copy,
+    } as Mapper<JsonClientExtensionResults, AuthenticationExtensionsClientOutputs>);
+  }
+}
+
 export default class Converter {
   public static convertCreationOptions(options: JsonPublicKeyCredentialCreationOptions): PublicKeyCredentialCreationOptions {
     return map(options, {
@@ -84,7 +93,7 @@ export default class Converter {
   }
 
   public static convertCreationResponse(pkc: PublicKeyCredential): JsonAttestationPublicKeyCredential {
-    return map(pkc, {
+    const response : JsonAttestationPublicKeyCredential = map(pkc, {
       type: MapAction.Copy,
       id: MapAction.Copy,
       rawId: MapAction.Base64Encode,
@@ -93,6 +102,9 @@ export default class Converter {
         attestationObject: MapAction.Base64Encode,
       } as Mapper<JsonAuthenticatorResponse, AuthenticatorResponse>,
     });
+
+    addExtensionOutputs(response, pkc);
+    return response;
   }
 
   public static convertRequestOptions(options: JsonPublicKeyCredentialRequestOptions): PublicKeyCredentialRequestOptions {
@@ -109,8 +121,7 @@ export default class Converter {
   }
 
   public static convertRequestResponse(pkc: PublicKeyCredential): JsonAssertionPublicKeyCredential {
-    // TODO extensions
-    return map(pkc, {
+    const response = map(pkc, {
       type: MapAction.Copy,
       id: MapAction.Copy,
       rawId: MapAction.Base64Encode,
@@ -120,6 +131,8 @@ export default class Converter {
         signature: MapAction.Base64Encode,
         userHandle: MapAction.Base64Encode,
       } as Mapper<JsonAuthenticatorResponse, AuthenticatorResponse>,
-    });
+    }) as JsonAssertionPublicKeyCredential;
+    addExtensionOutputs(response, pkc);
+    return response;
   }
 }

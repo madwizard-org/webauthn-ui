@@ -160,11 +160,9 @@ field set to a string indicating the type of error. For example:
 |------------------|--------------------------------|----------|-----------------------------------------------------------------------------|
 | type             | 'create'\|'get'                 | Yes      | The type of credential request to perform: create or get a credential. |
 | request          | object                         | Yes      | The request options for create/get credential as specified in the WebAuthn standard but with ArrayBuffers converted to base64url strings. |
+| trigger          | {type:'click', element: 'selector'|Element} |    | Yes       | Specify trigger to initiate the request. |
 | formField        | string selector or DOM element | Yes/No   | The input field to set save the result in. Not required if data-webauthn attribute is set on an input element. Can also be a textarea for debugging (in combination with submitForm = false) |
-| trigger          | 'domready'\|'load' (default)    | No       | Wait for either DOM ready event or DOM loaded event (default) before asking for the credential. |
-| delay            | integer (milliseconds)         | No       | Delay after trigger event before asking for credential. | 
-| debug            | boolean (default false)        | No       | In case of error log error to console for debugging purposes. |
-| postUnsupported  | boolean (default true)         | No       | When WebAuthn is unsupported by the client, post an 'unsupported' error response. When false, no action will be taken on unsupported clients. |
+| postUnsupportedImmediately  | boolean (default false)         | No       | When WebAuthn is unsupported by the client, post an 'unsupported' error response immediately without user interaction |
 | submitForm       | booekan (default true)         | No       | Submit form after setting the input field to the response. When false, only the input field is set but the form is not submitted. |
 
 ### Manual mode
