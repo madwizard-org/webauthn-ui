@@ -205,8 +205,10 @@ export class WebAuthnUI {
       if (rawJson === null) {
         throw new WebAuthnError('bad-config', 'Missing JSON in data-webauthn');
       }
-      const json = JSON.parse(rawJson) as AutoConfig;
-      if (!json) {
+      let json : AutoConfig;
+      try {
+        json = JSON.parse(rawJson) as AutoConfig;
+      } catch (e) {
         throw new WebAuthnError('bad-config', 'invalid JSON in data-webauthn on element');
       }
       if (!isScript && json.formField === undefined) {

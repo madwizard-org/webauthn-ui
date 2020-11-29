@@ -73,7 +73,7 @@ export interface JsonPublicKeyCredential<T extends JsonAuthenticatorResponse> {
     id: string;
     rawId: string;
     response: T;
-    clientExtensionResults: JsonClientExtensionResults;
+    clientExtensionResults?: JsonClientExtensionResults;
 }
 
 export type JsonAttestationPublicKeyCredential = JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>;

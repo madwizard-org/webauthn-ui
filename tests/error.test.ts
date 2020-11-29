@@ -17,3 +17,9 @@ test('Check instanceof', () => {
   expect(error).toBeInstanceOf(Error);
   expect(error).toBeInstanceOf(WebAuthnError);
 });
+
+test('Unknown type', () => {
+  const error = WebAuthnError.fromError({});
+
+  expect(error.message).toContain('unknown');
+});
