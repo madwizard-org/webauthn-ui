@@ -19,6 +19,9 @@ export class ReadyStateMocker {
     }
 
     async enterComplete() {
+      if (this.state === 'loading') {
+        await this.enterInteractive();
+      }
       // Document loaded
       this.state = 'complete';
       await window.dispatchEvent(new Event('load'));

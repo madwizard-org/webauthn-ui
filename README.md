@@ -12,7 +12,7 @@ It can also handle some auxilliary tasks such as initiating the WebAuthn request
 ## Features
 
 - API for translating between the WebAuthn API structures and pure json structures.
-- Automatically initiating a WebAuthn request and posting the response as json in a hidden form field without the need for custom javascript.
+- Automatically initiating a WebAuthn request from a button click and posting the response as json in a hidden form field without the need for custom javascript.
 - Detection of WebAuthn support with graceful error handling.
 - Adding CSS classes indicating WebAuthn feature support.
  
@@ -22,7 +22,7 @@ The WebAuthn API makes use of numerous JavaScript structures (such as PublicKeyC
 
 This library will keep the types supported in json the same. ArrayBuffers are converter to base64url encoded strings. To convert json back to the JavaScript structures knowledge of the structure is needed because base64url encoded strings are indistinguishable from normal strings. For this reason webauthn-ui only supports the fields that it knows of.
 
-For convenience a custom html5 data attribute can be used to automatically initiate a WebAuthn request on page load and posting the response to a hidden form input element. Using this method no custom javascript is needed, the webauthn-ui library can be included and it will automatically look for a json configuration in either a `data-webauthn` attribute on an input field or a `<script type='application/json' data-webauthn>` block containing the configuration.
+For convenience a custom html5 data attribute can be used to automatically initiate a WebAuthn request on a given event and posting the response to a hidden form input element. Using this method no custom javascript is needed, the webauthn-ui library can be included and it will automatically look for a json configuration in either a `data-webauthn` attribute on an input field or a `<script type='application/json' data-webauthn>` block containing the configuration.
 
 
 ## Installation
@@ -49,13 +49,15 @@ The UMD module can be used directly as a browser script (exposing WebAuthnUI as 
 
 As a script:
 ```html
-<script type="application/javascript" src="es6-promise.auto.min.js"></script> <!-- For old and crappy browsers -->
+<!-- es6-promise for old and crappy browsers -->
+<script type="application/javascript" src="es6-promise.auto.min.js"></script> 
 <script type="application/javascript" src="webauthn-ui.min.js"></script>
 ```
 
 Or using require:
 ```js
 
+// For old and crappy browsers
 require('es6-promise')
 
 // When using automatic loading via json scripts/html attributes (see below), just importing the library is enough:
@@ -72,11 +74,20 @@ const WebAuthnUI = require('webauthn-ui').WebAuthnUI;
 
 ### Automatic mode 
 
-The easiest way to use the library is to add a `data-webauthn` to an input element with a json configuration as the attribute's value.  When the page is loaded it will automatically initiate the WebAuthn request specified in the json data without the need for any custom JavaScript. The response will be put in the field's value and the form submitted automatically (by default).
+The easiest way to use the library is to add a `data-webauthn` to an input element with a json configuration as the attribute's value. When the page is loaded it will automatically setup an event handler for a specified element (e.g. a button to click) to initiate the WebAuthn request specified in the json data without the need for any custom JavaScript. The response will be put in the field's value and the form submitted automatically (by default).
 
 Example WebAuthn registration:
 ```html
-<input type="hidden" name="response" data-webauthn="{{&quot;type&quot;:&quot;create&quot;,&quot;request&quot;:{&quot;rp&quot;:{&quot;name&quot;:&quot;WebAuthn demo&quot;},&quot;user&quot;:{&quot;name&quot;:&quot;freddy&quot;,&quot;id&quot;:&quot;cGJ6WVlzRXNF&quot;,&quot;displayName&quot;:&quot;Freddy fruitcake&quot;},&quot;challenge&quot;:&quot;7b1m6n2KgMAuTp-FbOAl6sb0gD_5HZITqDF7ld8tl28&quot;,&quot;pubKeyCredParams&quot;:[{&quot;type&quot;:&quot;public-key&quot;,&quot;alg&quot;:-7}]}}" />
+<form method="post">
+    <!-- other form data -->
+
+    <!-- trigger button -->
+    <button type="button" id="register-btn">Register</button>
+
+    <input type="hidden" name="response" 
+        data-webauthn="{&quot;type&quot;:&quot;create&quot;,&quot;trigger&quot;:{&quot;event&quot;:&quot;click&quot;,&quot;element&quot;:&quot;#register-btn&quot;},&quot;request&quot;:{&quot;rp&quot;:{&quot;name&quot;:&quot;WebAuthn demo&quot;},&quot;user&quot;:{&quot;name&quot;:&quot;freddy&quot;,&quot;id&quot;:&quot;cGJ6WVlzRXNF&quot;,&quot;displayName&quot;:&quot;Freddy fruitcake&quot;},&quot;challenge&quot;:&quot;7b1m6n2KgMAuTp-FbOAl6sb0gD_5HZITqDF7ld8tl28&quot;,&quot;pubKeyCredParams&quot;:[{&quot;type&quot;:&quot;public-key&quot;,&quot;alg&quot;:-7}]}}" 
+    />
+</form>
 ```
 
 As an alternative you can also add the `data-webauthn` to a json script tag. Specify a form field to contain the response using a CSS selector in the `formField` property. 
@@ -98,6 +109,10 @@ Example WebAuthn registration:
 {
     "formField": "#webauthn-response",
     "type": "create",
+    "trigger": {
+        "event": "click",
+        "element": "#register-btn"
+    },
     "request": {
         "rp": {
             "name": "WebAuthn demo"
@@ -120,14 +135,16 @@ Example WebAuthn registration:
 
 <form method="post">
     <!-- other form data -->
+    <button type="button" id="register-btn">Register</button>
     <input type="hidden" id="webauthn-response" name="response" />
 </form>
 ```
 
-Both methods will ask the client to create a new credential and posts the result (both on success and failure) as a 
-serialized json string in the hidden form input. On success, the json structure will be an object with a `status` field 
-set to the string `"ok"`, and a `"credential"` field set to the 
-[PublicKeyCredential](https://www.w3.org/TR/webauthn/#publickeycredential) result of the WebAuthn request. The structure
+Both methods will wait until the user clicks the button, ask the client to create a new credential and posts the result
+(both on success and failure) as a serialized json string in the hidden form input. 
+
+On success, the json structure will be an object with a `status` field set to the string `"ok"`, and a `"credential"` field
+set to the [PublicKeyCredential](https://www.w3.org/TR/webauthn/#publickeycredential) result of the WebAuthn request. The structure
 of this object is the same as defined in the WebAuthn standard, but with all binary ArrayBuffers converted to base64url
 encoded strings. An example of a successful response looks like this (values are shortened for display purposes):
 ```json
@@ -160,12 +177,10 @@ field set to a string indicating the type of error. For example:
 |------------------|--------------------------------|----------|-----------------------------------------------------------------------------|
 | type             | 'create'\|'get'                 | Yes      | The type of credential request to perform: create or get a credential. |
 | request          | object                         | Yes      | The request options for create/get credential as specified in the WebAuthn standard but with ArrayBuffers converted to base64url strings. |
+| trigger          | {type:'click', element: 'selector'|Element} |    | Yes       | Specify trigger to initiate the request. |
 | formField        | string selector or DOM element | Yes/No   | The input field to set save the result in. Not required if data-webauthn attribute is set on an input element. Can also be a textarea for debugging (in combination with submitForm = false) |
-| trigger          | 'domready'\|'load' (default)    | No       | Wait for either DOM ready event or DOM loaded event (default) before asking for the credential. |
-| delay            | integer (milliseconds)         | No       | Delay after trigger event before asking for credential. | 
-| debug            | boolean (default false)        | No       | In case of error log error to console for debugging purposes. |
-| postUnsupported  | boolean (default true)         | No       | When WebAuthn is unsupported by the client, post an 'unsupported' error response. When false, no action will be taken on unsupported clients. |
-| submitForm       | booekan (default true)         | No       | Submit form after setting the input field to the response. When false, only the input field is set but the form is not submitted. |
+| postUnsupportedImmediately  | boolean (default false)         | No       | When WebAuthn is unsupported by the client, post an 'unsupported' error response immediately without user interaction |
+| submitForm       | boolean (default true)         | No       | Submit form after setting the input field to the response. When false, only the input field is set but the form is not submitted. |
 
 ### Manual mode
 
@@ -177,7 +192,7 @@ Use `WebAuthnUI.createCredential` to create a credential, it works similar to `n
 a WebAuthnUI 
 ```js
 
-import WebAuthnUI from 'webauthn-ui';
+import { WebAuthnUI } from 'webauthn-ui';
 
 let request = {
     "rp": {
@@ -231,5 +246,28 @@ The `unsupported` error is returned by webauthn-ui if the client does not suppor
 of older browsers such as IE. 
 
 The `innerError` field is set to the original error throw, if any.
+
+ 
+### WebAuthn support detection CSS classes
+
+When the CSS class `webauthn-detect` is added to an element, this library will add additional classes to this element
+indicating the degree of WebAuthn support:
+
+General WebAuthn support:
+- `webauthn-supported`
+- `webauthn-unsupported` 
+
+User verifying platform authentiator support:
+- `webauthn-uvpa-supported`
+- `webauthn-uvpa-unsupported`
+
+Example:
+```html
+<div class='webauthn-detect'>...</div>
+```
+After library and DOM is loaded:
+```html
+<div class='webauthn-detect webauthn-supported webauthn-uvpa-supported'>...</div>
+``` 
 
  

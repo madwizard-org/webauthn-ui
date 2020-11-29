@@ -44,7 +44,9 @@ test('Assertion full response converter', () => {
       userHandle: fixtures.rawUserId,
     } as AuthenticatorAssertionResponse,
     getClientExtensionResults() {
-      return {};
+      return {
+        appid: true,
+      };
     },
   };
 
@@ -57,6 +59,9 @@ test('Assertion full response converter', () => {
       authenticatorData: fixtures.urlAuthenticatorData,
       signature: fixtures.urlSignature,
       userHandle: fixtures.urlUserId,
+    },
+    clientExtensionResults: {
+      appid: true,
     },
   };
 

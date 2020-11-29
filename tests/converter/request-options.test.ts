@@ -24,6 +24,9 @@ test('Full request converter', () => {
       },
     ],
     userVerification: 'required',
+    extensions: {
+      appid: 'test.example',
+    },
   })).toEqual({
 
     challenge: fixtures.rawChallenge,
@@ -37,5 +40,8 @@ test('Full request converter', () => {
       },
     ],
     userVerification: 'required',
+    extensions: {
+      appid: 'test.example',
+    },
   });
 });

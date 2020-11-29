@@ -40,7 +40,6 @@ test('Minimal creation converter', () => {
 });
 
 test('Full creation converter', () => {
-  // TODO extensions
   expect(Converter.convertCreationOptions({
     rp: {
       id: 'demo',

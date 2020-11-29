@@ -1,8 +1,13 @@
 import { ErrorType } from './error';
 
+interface ClickTrigger
+{
+    event: 'click';
+    element: string|HTMLElement;
+}
+
 type BaseConfig = {
-    trigger?: 'domready' | 'load';
-    delay?: number;
+    trigger: ClickTrigger;
     debug?: boolean;
 };
 
@@ -21,7 +26,7 @@ export type Config = CreateConfig | RequestConfig;
 export type AutoConfig =
 {
     formField?: string|HTMLInputElement|HTMLTextAreaElement,
-    postUnsupported?: boolean;
+    postUnsupportedImmediately?: boolean,
     submitForm?: boolean;
 } & Config;
 
@@ -53,11 +58,22 @@ export interface JsonAuthenticatorAssertionResponse extends JsonAuthenticatorRes
     userHandle: string|null;
 }
 
+export interface JsonAuthenticationExtensionsClientInputs
+{
+    appid?: string;
+}
+
+export interface JsonClientExtensionResults
+{
+    appid?: boolean;
+}
+
 export interface JsonPublicKeyCredential<T extends JsonAuthenticatorResponse> {
     type: string;
     id: string;
     rawId: string;
     response: T;
+    clientExtensionResults?: JsonClientExtensionResults;
 }
 
 export type JsonAttestationPublicKeyCredential = JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>;
