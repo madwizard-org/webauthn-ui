@@ -1,6 +1,6 @@
 {
   "name": "webauthn-ui",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "WebAuthn helper module",
   "main": "dist/umd/webauthn-ui.js",
   "module": "dist/es/webauthn-ui.js",
