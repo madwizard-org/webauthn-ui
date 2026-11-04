@@ -1,5 +1,6 @@
-import { ready, loaded } from '../src/ready';
-import { ReadyStateMocker } from './mock';
+import {loaded, ready} from '../src/ready';
+import {ReadyStateMocker} from './mock';
+import {beforeEach, expect, test} from '@jest/globals';
 
 const stateMock = new ReadyStateMocker();
 

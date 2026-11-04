@@ -12,7 +12,7 @@ function waitReadyState(alreadyDone: boolean, eventDispatcher: Window|Document, 
   });
 }
 
-export function ready<T>(): Promise<void> {
+export function ready(): Promise<void> {
   return waitReadyState(document.readyState !== 'loading', document, 'DOMContentLoaded');
 }
 

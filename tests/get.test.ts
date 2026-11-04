@@ -1,8 +1,10 @@
 import { WebAuthnUI, WebAuthnError } from '../src';
 import * as fixtures from './fixtures';
+import {mockWebAuthn, setCredentials} from "./mock";
+import { beforeEach, test, expect, jest } from '@jest/globals';
 
 beforeEach(() => {
-  (navigator as any).credentials = undefined;
+  setCredentials(undefined);
 });
 
 test('Get credential unsupported', async () => {
@@ -10,23 +12,26 @@ test('Get credential unsupported', async () => {
 });
 
 test('Get credential DOM error', async () => {
-  (navigator as any).credentials = {
-    get: jest.fn().mockImplementation(() => {
+  mockWebAuthn();
+  setCredentials({
+    get: jest.fn<CredentialsContainer['get']>().mockImplementation(() => {
       throw new DOMException('Security Error', 'SecurityError');
     }),
-  };
-  (window as any).PublicKeyCredential = () => {};
+  });
+  mockWebAuthn();
   await expect(WebAuthnUI.getCredential(fixtures.jsonRequestOptions)).rejects.toThrow('WebAuthnUI error: dom-security');
 });
 
 test('Get credential', async () => {
-  const get = jest.fn().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
-  (navigator as any).credentials = {
+  mockWebAuthn();
+  const get = jest.fn<(options?: unknown) => Promise<Credential | null>>()
+    .mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
+  setCredentials({
     get,
-  };
-  (window as any).PublicKeyCredential = () => {};
+  });
+  mockWebAuthn();
 
   await expect(WebAuthnUI.getCredential(fixtures.jsonRequestOptions)).resolves.toEqual(fixtures.jsonRequestResponse);
-  expect(get).toBeCalledTimes(1);
-  expect(get).toBeCalledWith({ publicKey: fixtures.rawRequestOptions });
+  expect(get).toHaveBeenCalledTimes(1);
+  expect(get).toHaveBeenCalledWith({ publicKey: { dummyRequestOptions: true } });
 });

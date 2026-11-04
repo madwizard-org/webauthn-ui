@@ -8,50 +8,59 @@ jobs:
         runs-on: ubuntu-latest
         steps:
 
-            - uses: actions/checkout@v1
+            - uses: actions/checkout@v7
 
-            - name: Use Node.js 12.x
-              uses: actions/setup-node@v1
+            - uses: pnpm/action-setup@v6
+
+            - name: Use Node.js 24.x
+              uses: actions/setup-node@v7
               with:
-                  node-version: 12.x
+                  node-version: 24.x
+                  cache: pnpm
 
-            - name: npm install, make test-coverage
+            - name: pnpm install, lint
               run: |
-                  npm install
-                  npm run lint
+                  pnpm install --frozen-lockfile
+                  pnpm run lint
 
     test:
         runs-on: ubuntu-latest
         steps:
 
-            - uses: actions/checkout@v1
+            - uses: actions/checkout@v7
 
-            - name: Use Node.js 12.x
-              uses: actions/setup-node@v1
+            - uses: pnpm/action-setup@v6
+
+            - name: Use Node.js 24.x
+              uses: actions/setup-node@v7
               with:
-                  node-version: 12.x
+                  node-version: 24.x
+                  cache: pnpm
 
-            - name: npm install, make test-coverage
+            - name: pnpm install, test-coverage
               run: |
-                  npm install
-                  npm run test-coverage
+                  pnpm install --frozen-lockfile
+                  pnpm run test-coverage
 
             - name: Coveralls
-              uses: coverallsapp/github-action@master
+              uses: coverallsapp/github-action@v2
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
     build:
         runs-on: ubuntu-latest
         steps:
 
-            - uses: actions/checkout@v1
+            - uses: actions/checkout@v7
 
-            - name: Use Node.js 12.x
-              uses: actions/setup-node@v1
+            - uses: pnpm/action-setup@v6
+
+            - name: Use Node.js 24.x
+              uses: actions/setup-node@v7
               with:
-                  node-version: 12.x
+                  node-version: 24.x
+                  cache: pnpm
 
-            - name: npm install, make test-coverage
+            - name: pnpm install, build
               run: |
-                  npm install
-                  npm run build:prod
+                  pnpm install --frozen-lockfile
+                  pnpm run build:prod

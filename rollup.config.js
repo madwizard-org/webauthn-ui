@@ -1,52 +1,31 @@
-import { terser } from 'rollup-plugin-terser';
-import typescript from 'rollup-plugin-typescript2';
+import terser from '@rollup/plugin-terser';
+import typescript from '@rollup/plugin-typescript';
+import process from 'node:process';
 
 const env = process.env.NODE_ENV;
 const devMode = (env === 'development');
 
 const banner = `/*! webauthn-ui library (C) 2018 - ${new Date().getFullYear()} Thomas Bleeker (www.madwizard.org) - MIT license */\n`;
 
-function cleanup() {
-  // Note: it is allowed to remove the (rather large) tslib 0BSD license notice.
-  // See https://github.com/microsoft/tslib/issues/47
-
-  return {
-    name: 'cleanup',
-    renderChunk(code) {
-      let replaced = code.replace(/\/\*![^M/]+Microsoft Corporation[\s\S]+?\*\//, '/* Microsoft tslib 0BSD licensed */');
-      replaced = replaced.replace(/\r\n/g, '\n');
-      return { code: replaced, map: null };
-    },
-  };
-}
-
+// Declarations are emitted separately by tsc (see the build scripts), since the official
+// plugin only writes them inside the Rollup output directory.
 const tsPluginOpts = {
-  useTsconfigDeclarationDir: true,
+  sourceMap: devMode,
+  declaration: false,
+  declarationDir: undefined,
 };
 
 const builds = [
-  {
+    {
     input: './src/index.ts',
     output: {
-      file: 'dist/umd/webauthn-ui.js',
-      format: 'umd',
-      name: 'WebAuthnUI',
-      banner,
-      sourcemap: devMode,
-    },
-    plugins: [typescript(tsPluginOpts), cleanup()],
-  },
-  {
-    input: './src/index.ts',
-    output: {
-      file: 'dist/es/webauthn-ui.js',
+      file: 'dist/webauthn-ui.js',
       format: 'es',
       banner,
       sourcemap: devMode,
     },
-    plugins: [typescript(tsPluginOpts), cleanup()],
+    plugins: [typescript(tsPluginOpts)],
   },
-
 ];
 
 if (!devMode) {
@@ -54,26 +33,12 @@ if (!devMode) {
     {
       input: './src/index.ts',
       output: {
-        file: 'dist/umd/webauthn-ui.min.js',
-        format: 'umd',
-        name: 'WebAuthnUI',
-        banner,
-        sourcemap: devMode,
-
-      },
-      plugins: [typescript(tsPluginOpts), terser({ output: { comments: /webauthn-ui/ } }), cleanup()],
-    },
-  );
-  builds.push(
-    {
-      input: './src/index.ts',
-      output: {
-        file: 'dist/es/webauthn-ui.min.js',
+        file: 'dist/webauthn-ui.min.js',
         format: 'es',
         banner,
         sourcemap: devMode,
       },
-      plugins: [typescript(tsPluginOpts), terser({ output: { comments: /webauthn-ui/ } }), cleanup()],
+      plugins: [typescript(tsPluginOpts), terser()],
     },
   );
 }

@@ -2,131 +2,51 @@ import { ErrorType } from './error';
 
 interface ClickTrigger
 {
-    event: 'click';
-    element: string|HTMLElement;
+  event: 'click';
+  element: string|HTMLElement;
 }
 
+interface LoadTrigger
+{
+  event: 'load';
+}
+
+export type Trigger = ClickTrigger | LoadTrigger;
+
 type BaseConfig = {
-    trigger: ClickTrigger;
-    debug?: boolean;
+  // At least one trigger is required, using trigger and/or triggers
+  trigger?: Trigger;
+  triggers?: Trigger[];
+  debug?: boolean;
 };
 
 interface CreateConfig extends BaseConfig {
-    type: 'create';
-    request: JsonPublicKeyCredentialCreationOptions;
+  type: 'create';
+  request: PublicKeyCredentialCreationOptionsJSON;
 }
 
 interface RequestConfig extends BaseConfig {
-    type: 'get';
-    request : JsonPublicKeyCredentialRequestOptions;
+  type: 'get';
+  request: PublicKeyCredentialRequestOptionsJSON;
 }
 
 export type Config = CreateConfig | RequestConfig;
 
 export type AutoConfig =
 {
-    formField?: string|HTMLInputElement|HTMLTextAreaElement,
-    postUnsupportedImmediately?: boolean,
-    submitForm?: boolean;
+  formField?: string|HTMLInputElement|HTMLTextAreaElement,
+  postUnsupportedImmediately?: boolean,
+  submitForm?: boolean;
 } & Config;
 
 export interface SuccessResponse {
-    status: 'ok';
-    credential: JsonAttestationPublicKeyCredential|JsonAssertionPublicKeyCredential;
+  status: 'ok';
+  credential: RegistrationResponseJSON|AuthenticationResponseJSON;
 }
 
 export interface FailureResponse {
-    status: 'failed';
-    error: ErrorType;
+  status: 'failed';
+  error: ErrorType;
 }
 
 export type StatusResponse = SuccessResponse|FailureResponse;
-
-// JSON variants of WebAuthn structures with binary buffers replaced by strings (base64url encoded).
-// based on @types/webappsec-credential-management types
-export interface JsonAuthenticatorResponse {
-    clientDataJSON : string;
-}
-
-export interface JsonAuthenticatorAttestationResponse extends JsonAuthenticatorResponse {
-    attestationObject: string;
-}
-
-export interface JsonAuthenticatorAssertionResponse extends JsonAuthenticatorResponse {
-    authenticatorData: string;
-    signature: string;
-    userHandle: string|null;
-}
-
-export interface JsonAuthenticationExtensionsClientInputs
-{
-    appid?: string;
-}
-
-export interface JsonClientExtensionResults
-{
-    appid?: boolean;
-}
-
-export interface JsonPublicKeyCredential<T extends JsonAuthenticatorResponse> {
-    type: string;
-    id: string;
-    rawId: string;
-    response: T;
-    clientExtensionResults?: JsonClientExtensionResults;
-}
-
-export type JsonAttestationPublicKeyCredential = JsonPublicKeyCredential<JsonAuthenticatorAttestationResponse>;
-export type JsonAssertionPublicKeyCredential = JsonPublicKeyCredential<JsonAuthenticatorAssertionResponse>;
-
-export interface JsonPublicKeyCredentialRequestOptions {
-    challenge: string;
-    timeout?: number;
-    rpId?: string;
-    allowCredentials?: JsonPublicKeyCredentialDescriptor[];
-    userVerification?: string;
-    extensions?: any;
-}
-
-export interface JsonPublicKeyCredentialRpEntity {
-    id?: string;
-    name: string;
-}
-
-export interface JsonPublicKeyCredentialUserEntity {
-    id: string;
-    name: string;
-    displayName: string;
-    icon?: string;
-}
-
-export interface JsonPublicKeyCredentialParameters {
-    type: 'public-key';
-    alg: number;
-}
-
-export interface JsonPublicKeyCredentialDescriptor {
-    type: 'public-key';
-    id: string;
-    transports?: Array<'usb' | 'nfc' | 'ble' | 'internal'>; // TODO: in newer spec this is a string, not an enum.
-}
-
-export interface JsonAuthenticatorSelectionCriteria {
-    authenticatorAttachment?: 'platform' | 'cross-platform';
-    requireResidentKey?: boolean;
-    userVerification?: 'required' | 'preferred' | 'discouraged';
-}
-
-export interface JsonPublicKeyCredentialCreationOptions {
-    rp: JsonPublicKeyCredentialRpEntity;
-    user: JsonPublicKeyCredentialUserEntity;
-
-    challenge: string;
-    pubKeyCredParams: JsonPublicKeyCredentialParameters[];
-
-    timeout?: number;
-    excludeCredentials?: JsonPublicKeyCredentialDescriptor[];
-    authenticatorSelection?: JsonAuthenticatorSelectionCriteria;
-    attestation?: 'none' | 'indirect' | 'direct';
-    extensions?: any;
-}

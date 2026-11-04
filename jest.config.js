@@ -1,11 +1,11 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'jsdom',
-  collectCoverageFrom: [
-    'src/**/*.ts',
-  ],
-  moduleFileExtensions: ['ts', 'js'], // use ts first to prevent loading transpiled js files instead of ts files in src
-  coveragePathIgnorePatterns: [
-    '\\.d\\.ts$',
-  ],
+import { createDefaultPreset } from "ts-jest";
+
+const tsJestTransformCfg = createDefaultPreset().transform;
+
+export default{
+  testEnvironment: "jsdom",
+  collectCoverageFrom: ["src/**/*.ts"],
+  transform: {
+    ...tsJestTransformCfg,
+  },
 };

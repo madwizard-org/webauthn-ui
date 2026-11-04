@@ -1,6 +1,9 @@
-import { importModule, ReadyStateMocker } from './mock';
+import {
+  importModule, mockWebAuthn, ReadyStateMocker, setCredentials, setPublicKeyCredential,
+} from './mock';
 import * as fixtures from './fixtures';
-import { AutoConfig } from '../src/types';
+import { AutoConfig, Trigger } from '../src/types';
+import { beforeEach, test, expect, jest } from '@jest/globals';
 
 const stateMocker = new ReadyStateMocker();
 
@@ -9,8 +12,8 @@ beforeEach(() => {
   jest.resetModules();
   stateMocker.resetLoading();
 
-  (navigator as any).credentials = undefined;
-  (window as any).PublicKeyCredential = undefined;
+  setCredentials(undefined);
+  setPublicKeyCredential(undefined);
 });
 
 function createTestHtml({
@@ -24,16 +27,7 @@ function createTestHtml({
         event: 'click',
         element: '#trigger-btn',
       },
-      request: {
-        rp: { name: 'WebAuthn demo' },
-        user: {
-          name: 'freddy',
-          id: 'cGJ6WVlzRXNF',
-          displayName: 'Freddy fruitcake',
-        },
-        challenge: '7b1m6n2KgMAuTp-FbOAl6sb0gD_5HZITqDF7ld8tl28',
-        pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
-      },
+      request: fixtures.jsonCreateOptions,
     };
   } else {
     config = {
@@ -43,7 +37,7 @@ function createTestHtml({
         element: '#trigger-btn',
       },
       request: {
-        challenge: '7b1m6n2KgMAuTp-FbOAl6sb0gD_5HZITqDF7ld8tl28',
+        challenge: fixtures.urlChallenge,
       },
     };
   }
@@ -80,7 +74,9 @@ test('Automatic css classes', async () => {
   document.body.innerHTML = '<div id="test" class="webauthn-detect"></div>';
 
   // Import module
-  await import('../src/index');
+  const mod = await import('../src/index');
+
+  mod.autoWebAuthn();
 
   // No auto code run yet
   expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect');
@@ -117,11 +113,11 @@ test('Create request via JSON script (unsupported case)', async () => {
 });
 
 test('Create request via JSON script (success case)', async () => {
-  const create = jest.fn().mockReturnValue(Promise.resolve(fixtures.rawCreateResponse));
-  (navigator as any).credentials = {
+  const create = jest.fn<CredentialsContainer['create']>().mockReturnValue(Promise.resolve(fixtures.rawCreateResponse));
+  setCredentials({
     create,
-  };
-  (window as any).PublicKeyCredential = () => {};
+  });
+  mockWebAuthn();
 
   document.body.innerHTML = createTestHtml({ type: 'create', mode: 'script', field: 'input' });
 
@@ -144,11 +140,11 @@ test('Create request via JSON script (success case)', async () => {
   /// Auto code run, ensure complete
   await mod.autoPromise;
 
-  expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe(
-    '{"status":"ok","credential":{"type":"public-key","id":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q",'
-        + '"rawId":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q","response":{"clientDataJSON":"eyJ0ZXN0IjoiZGF0YSJ9",'
-        + '"attestationObject":"MiNbx5u7qFgnfMV3-GcemtZP-NmMnrhFQN0QFXeHwfs"}}}',
-  );
+
+  const val = (document.getElementById('webauthn-response') as HTMLInputElement).value;
+  const parsed = JSON.parse(val);
+
+  expect(parsed).toEqual({credential: fixtures.jsonCreateResponse, status: 'ok'});
 });
 
 test('postUnsupportedImmediately true', async () => {
@@ -175,11 +171,11 @@ test('postUnsupportedImmediately true', async () => {
 test('Get request via data attribute textarea', async () => {
   stateMocker.resetLoading();
 
-  const get = jest.fn().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
-  (navigator as any).credentials = {
+  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
+  setCredentials({
     get,
-  };
-  (window as any).PublicKeyCredential = () => {};
+  });
+  mockWebAuthn();
 
   document.body.innerHTML = createTestHtml({
     type: 'get', mode: 'attr', field: 'textarea', form: false,
@@ -204,22 +200,20 @@ test('Get request via data attribute textarea', async () => {
   /// Auto code run, ensure complete
   await mod.autoPromise;
 
-  expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe(
-    '{"status":"ok","credential":{"type":"public-key","id":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q",'
-    + '"rawId":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q","response":{"clientDataJSON":"eyJ0ZXN0IjoiZGF0YSJ9"'
-    + ',"authenticatorData":"e2zN0cBX8nYCQYP_yPhU3dXSuhVpbE2hc3TajPuco2EUOK2Wqg",'
-    + '"signature":"tkbIGwoeqhwQ-EoCOhR9zCEqR8HHis9Gcpa_YSfPvQw","userHandle":null}}}',
-  );
+  const val = (document.getElementById('webauthn-response') as HTMLInputElement).value;
+  const parsed = JSON.parse(val);
+
+  expect(parsed).toEqual({credential: fixtures.jsonRequestResponse, status: 'ok'});
 });
 
 test('Get form submit via data attribute input', async () => {
   stateMocker.resetLoading();
 
-  const get = jest.fn().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
-  (navigator as any).credentials = {
+  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
+  setCredentials({
     get,
-  };
-  (window as any).PublicKeyCredential = () => {};
+  });
+  mockWebAuthn();
 
   document.body.innerHTML = createTestHtml({
     type: 'get', mode: 'attr', field: 'input', form: true,
@@ -245,10 +239,115 @@ test('Get form submit via data attribute input', async () => {
 
   expect(formSubmitted).toBe(true);
 
-  expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe(
-    '{"status":"ok","credential":{"type":"public-key","id":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q",'
-    + '"rawId":"mTt0zCJUFozcNOBRcjWFMBcTfBKEzfg_QxnU8bM8-5Q","response":{"clientDataJSON":"eyJ0ZXN0IjoiZGF0YSJ9"'
-    + ',"authenticatorData":"e2zN0cBX8nYCQYP_yPhU3dXSuhVpbE2hc3TajPuco2EUOK2Wqg",'
-    + '"signature":"tkbIGwoeqhwQ-EoCOhR9zCEqR8HHis9Gcpa_YSfPvQw","userHandle":null}}}',
-  );
+  const val = (document.getElementById('webauthn-response') as HTMLInputElement).value;
+  const parsed = JSON.parse(val);
+
+  expect(parsed).toEqual({credential: fixtures.jsonRequestResponse, status: 'ok'});
+});
+
+function createAttrInput(config: Partial<AutoConfig>) {
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.setAttribute('data-webauthn', JSON.stringify({
+    type: 'get',
+    request: fixtures.jsonRequestOptions,
+    submitForm: false,
+    ...config,
+  }));
+  document.body.innerHTML = '<button id="trigger-btn">start</button>';
+  document.body.append(input);
+  return input;
+}
+
+function mockGet() {
+  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
+  setCredentials({ get });
+  mockWebAuthn();
+  return get;
+}
+
+test('Load trigger', async () => {
+  const get = mockGet();
+  const input = createAttrInput({ trigger: { event: 'load' } });
+
+  const mod = await importModule();
+  await stateMocker.enterInteractive();
+  expect(get).not.toHaveBeenCalled();
+
+  await stateMocker.enterComplete();
+  await mod.autoPromise;
+
+  expect(get).toHaveBeenCalledTimes(1);
+  expect(JSON.parse(input.value)).toEqual({ credential: fixtures.jsonRequestResponse, status: 'ok' });
+});
+
+test('Triggers array', async () => {
+  const get = mockGet();
+  const input = createAttrInput({ triggers: [{ event: 'click', element: '#trigger-btn' }] });
+
+  const mod = await importModule();
+  await stateMocker.enterComplete();
+  expect(get).not.toHaveBeenCalled();
+
+  triggerButton();
+  await mod.autoPromise;
+
+  expect(get).toHaveBeenCalledTimes(1);
+  expect(JSON.parse(input.value)).toEqual({ credential: fixtures.jsonRequestResponse, status: 'ok' });
+});
+
+test('Trigger and triggers combined', async () => {
+  const get = mockGet();
+  createAttrInput({
+    trigger: { event: 'load' },
+    triggers: [{ event: 'click', element: '#trigger-btn' }],
+  });
+
+  const mod = await importModule();
+  await stateMocker.enterComplete();
+  await mod.autoPromise;
+  expect(get).toHaveBeenCalledTimes(1);
+
+  // Click trigger still works after the load trigger completed
+  triggerButton();
+  await new Promise((resolve) => { setTimeout(resolve, 0); });
+  expect(get).toHaveBeenCalledTimes(2);
+});
+
+test('Triggers ignored while request in progress', async () => {
+  let finish: (value: Credential) => void = () => {};
+  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+  setCredentials({ get });
+  mockWebAuthn();
+  createAttrInput({ trigger: { event: 'click', element: '#trigger-btn' } });
+
+  const mod = await importModule();
+  await stateMocker.enterComplete();
+
+  triggerButton();
+  triggerButton();
+  finish(fixtures.rawRequestResponse);
+  await mod.autoPromise;
+
+  expect(get).toHaveBeenCalledTimes(1);
+});
+
+test('Missing trigger', async () => {
+  mockGet();
+  createAttrInput({});
+
+  const mod = await importModule();
+  await stateMocker.enterComplete();
+
+  await expect(mod.autoPromise).rejects.toThrow('No trigger specified.');
+});
+
+test('Invalid trigger event', async () => {
+  mockGet();
+  createAttrInput({ triggers: [{ event: 'hover' } as unknown as Trigger] });
+
+  const mod = await importModule();
+  await stateMocker.enterComplete();
+
+  await expect(mod.autoPromise).rejects.toThrow('Invalid trigger event hover.');
 });

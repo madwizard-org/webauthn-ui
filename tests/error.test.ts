@@ -1,5 +1,5 @@
 import { WebAuthnError } from '../src/error';
-
+import { expect, test } from '@jest/globals';
 test('WebAuthnEror', () => {
   expect(new WebAuthnError('unsupported')).toHaveProperty('name', 'unsupported');
   const inner = new DOMException('Not allowed', 'NotAllowedError');
