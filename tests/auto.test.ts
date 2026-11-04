@@ -1,5 +1,9 @@
 import {
-  importModule, mockWebAuthn, ReadyStateMocker, setCredentials, setPublicKeyCredential,
+  importModule,
+  mockWebAuthn,
+  ReadyStateMocker,
+  setCredentials,
+  setPublicKeyCredential,
 } from './mock';
 import * as fixtures from './fixtures';
 import { AutoConfig, Trigger } from '../src/types';
@@ -17,9 +21,17 @@ beforeEach(() => {
 });
 
 function createTestHtml({
-  type, mode, field, form,
-}: { type: 'create' | 'get', mode: 'script' | 'attr', field: 'textarea' | 'input', form?: boolean }) {
-  let config : AutoConfig;
+  type,
+  mode,
+  field,
+  form,
+}: {
+  type: 'create' | 'get';
+  mode: 'script' | 'attr';
+  field: 'textarea' | 'input';
+  form?: boolean;
+}) {
+  let config: AutoConfig;
   if (type === 'create') {
     config = {
       type: 'create',
@@ -79,21 +91,31 @@ test('Automatic css classes', async () => {
   mod.autoWebAuthn();
 
   // No auto code run yet
-  expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect');
+  expect(document.getElementById('test')!.classList.value).toBe(
+    'webauthn-detect',
+  );
 
   // Document loaded
   await stateMocker.enterInteractive();
 
   /// Auto code run
-  expect(document.getElementById('test')!.classList.value).toBe('webauthn-detect webauthn-unsupported webauthn-uvpa-unsupported');
+  expect(document.getElementById('test')!.classList.value).toBe(
+    'webauthn-detect webauthn-unsupported webauthn-uvpa-unsupported',
+  );
 });
 
 test('Create request via JSON script (unsupported case)', async () => {
   stateMocker.resetLoading();
 
-  document.body.innerHTML = createTestHtml({ type: 'create', mode: 'script', field: 'input' });
+  document.body.innerHTML = createTestHtml({
+    type: 'create',
+    mode: 'script',
+    field: 'input',
+  });
 
-  const input = document.getElementById('webauthn-response') as HTMLInputElement;
+  const input = document.getElementById(
+    'webauthn-response',
+  ) as HTMLInputElement;
   const mod = await importModule();
 
   expect(mod.autoSucceeded).toBe(null);
@@ -109,19 +131,29 @@ test('Create request via JSON script (unsupported case)', async () => {
   /// Auto code run, ensure complete
   await mod.autoPromise;
 
-  expect((document.getElementById('webauthn-response') as HTMLInputElement).value).toBe('{"status":"failed","error":"unsupported"}');
+  expect(
+    (document.getElementById('webauthn-response') as HTMLInputElement).value,
+  ).toBe('{"status":"failed","error":"unsupported"}');
 });
 
 test('Create request via JSON script (success case)', async () => {
-  const create = jest.fn<CredentialsContainer['create']>().mockReturnValue(Promise.resolve(fixtures.rawCreateResponse));
+  const create = jest
+    .fn<CredentialsContainer['create']>()
+    .mockReturnValue(Promise.resolve(fixtures.rawCreateResponse));
   setCredentials({
     create,
   });
   mockWebAuthn();
 
-  document.body.innerHTML = createTestHtml({ type: 'create', mode: 'script', field: 'input' });
+  document.body.innerHTML = createTestHtml({
+    type: 'create',
+    mode: 'script',
+    field: 'input',
+  });
 
-  const input = document.getElementById('webauthn-response') as HTMLInputElement;
+  const input = document.getElementById(
+    'webauthn-response',
+  ) as HTMLInputElement;
   const mod = await importModule();
 
   expect(mod.autoSucceeded).toBe(null);
@@ -140,26 +172,32 @@ test('Create request via JSON script (success case)', async () => {
   /// Auto code run, ensure complete
   await mod.autoPromise;
 
-
-  const val = (document.getElementById('webauthn-response') as HTMLInputElement).value;
+  const val = (document.getElementById('webauthn-response') as HTMLInputElement)
+    .value;
   const parsed = JSON.parse(val);
 
-  expect(parsed).toEqual({credential: fixtures.jsonCreateResponse, status: 'ok'});
+  expect(parsed).toEqual({
+    credential: fixtures.jsonCreateResponse,
+    status: 'ok',
+  });
 });
 
 test('postUnsupportedImmediately true', async () => {
   const input = document.createElement('input');
   input.type = 'hidden';
   input.value = '';
-  input.setAttribute('data-webauthn', JSON.stringify({
-    type: 'create',
-    trigger: {
-      event: 'click',
-      element: '#trigger-btn',
-    },
-    request: fixtures.jsonCreateOptions,
-    postUnsupportedImmediately: true,
-  } as AutoConfig));
+  input.setAttribute(
+    'data-webauthn',
+    JSON.stringify({
+      type: 'create',
+      trigger: {
+        event: 'click',
+        element: '#trigger-btn',
+      },
+      request: fixtures.jsonCreateOptions,
+      postUnsupportedImmediately: true,
+    } as AutoConfig),
+  );
   document.body.append(input);
   const mod = await importModule();
   await stateMocker.enterComplete();
@@ -171,17 +209,24 @@ test('postUnsupportedImmediately true', async () => {
 test('Get request via data attribute textarea', async () => {
   stateMocker.resetLoading();
 
-  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
+  const get = jest
+    .fn<CredentialsContainer['get']>()
+    .mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
   setCredentials({
     get,
   });
   mockWebAuthn();
 
   document.body.innerHTML = createTestHtml({
-    type: 'get', mode: 'attr', field: 'textarea', form: false,
+    type: 'get',
+    mode: 'attr',
+    field: 'textarea',
+    form: false,
   });
 
-  const input = document.getElementById('webauthn-response') as HTMLTextAreaElement;
+  const input = document.getElementById(
+    'webauthn-response',
+  ) as HTMLTextAreaElement;
   const mod = await importModule();
 
   expect(mod.autoSucceeded).toBe(null);
@@ -200,23 +245,32 @@ test('Get request via data attribute textarea', async () => {
   /// Auto code run, ensure complete
   await mod.autoPromise;
 
-  const val = (document.getElementById('webauthn-response') as HTMLInputElement).value;
+  const val = (document.getElementById('webauthn-response') as HTMLInputElement)
+    .value;
   const parsed = JSON.parse(val);
 
-  expect(parsed).toEqual({credential: fixtures.jsonRequestResponse, status: 'ok'});
+  expect(parsed).toEqual({
+    credential: fixtures.jsonRequestResponse,
+    status: 'ok',
+  });
 });
 
 test('Get form submit via data attribute input', async () => {
   stateMocker.resetLoading();
 
-  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
+  const get = jest
+    .fn<CredentialsContainer['get']>()
+    .mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
   setCredentials({
     get,
   });
   mockWebAuthn();
 
   document.body.innerHTML = createTestHtml({
-    type: 'get', mode: 'attr', field: 'input', form: true,
+    type: 'get',
+    mode: 'attr',
+    field: 'input',
+    form: true,
   });
 
   let formSubmitted = false;
@@ -239,28 +293,37 @@ test('Get form submit via data attribute input', async () => {
 
   expect(formSubmitted).toBe(true);
 
-  const val = (document.getElementById('webauthn-response') as HTMLInputElement).value;
+  const val = (document.getElementById('webauthn-response') as HTMLInputElement)
+    .value;
   const parsed = JSON.parse(val);
 
-  expect(parsed).toEqual({credential: fixtures.jsonRequestResponse, status: 'ok'});
+  expect(parsed).toEqual({
+    credential: fixtures.jsonRequestResponse,
+    status: 'ok',
+  });
 });
 
 function createAttrInput(config: Partial<AutoConfig>) {
   const input = document.createElement('input');
   input.type = 'hidden';
-  input.setAttribute('data-webauthn', JSON.stringify({
-    type: 'get',
-    request: fixtures.jsonRequestOptions,
-    submitForm: false,
-    ...config,
-  }));
+  input.setAttribute(
+    'data-webauthn',
+    JSON.stringify({
+      type: 'get',
+      request: fixtures.jsonRequestOptions,
+      submitForm: false,
+      ...config,
+    }),
+  );
   document.body.innerHTML = '<button id="trigger-btn">start</button>';
   document.body.append(input);
   return input;
 }
 
 function mockGet() {
-  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
+  const get = jest
+    .fn<CredentialsContainer['get']>()
+    .mockReturnValue(Promise.resolve(fixtures.rawRequestResponse));
   setCredentials({ get });
   mockWebAuthn();
   return get;
@@ -278,12 +341,17 @@ test('Load trigger', async () => {
   await mod.autoPromise;
 
   expect(get).toHaveBeenCalledTimes(1);
-  expect(JSON.parse(input.value)).toEqual({ credential: fixtures.jsonRequestResponse, status: 'ok' });
+  expect(JSON.parse(input.value)).toEqual({
+    credential: fixtures.jsonRequestResponse,
+    status: 'ok',
+  });
 });
 
 test('Triggers array', async () => {
   const get = mockGet();
-  const input = createAttrInput({ triggers: [{ event: 'click', element: '#trigger-btn' }] });
+  const input = createAttrInput({
+    triggers: [{ event: 'click', element: '#trigger-btn' }],
+  });
 
   const mod = await importModule();
   await stateMocker.enterComplete();
@@ -293,7 +361,10 @@ test('Triggers array', async () => {
   await mod.autoPromise;
 
   expect(get).toHaveBeenCalledTimes(1);
-  expect(JSON.parse(input.value)).toEqual({ credential: fixtures.jsonRequestResponse, status: 'ok' });
+  expect(JSON.parse(input.value)).toEqual({
+    credential: fixtures.jsonRequestResponse,
+    status: 'ok',
+  });
 });
 
 test('Trigger and triggers combined', async () => {
@@ -310,13 +381,19 @@ test('Trigger and triggers combined', async () => {
 
   // Click trigger still works after the load trigger completed
   triggerButton();
-  await new Promise((resolve) => { setTimeout(resolve, 0); });
+  await new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
   expect(get).toHaveBeenCalledTimes(2);
 });
 
 test('Triggers ignored while request in progress', async () => {
   let finish: (value: Credential) => void = () => {};
-  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+  const get = jest.fn<CredentialsContainer['get']>().mockReturnValue(
+    new Promise((resolve) => {
+      finish = resolve;
+    }),
+  );
   setCredentials({ get });
   mockWebAuthn();
   createAttrInput({ trigger: { event: 'click', element: '#trigger-btn' } });

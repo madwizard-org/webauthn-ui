@@ -3,7 +3,7 @@ import typescript from '@rollup/plugin-typescript';
 import process from 'node:process';
 
 const env = process.env.NODE_ENV;
-const devMode = (env === 'development');
+const devMode = env === 'development';
 
 const banner = `/*! webauthn-ui library (C) 2018 - ${new Date().getFullYear()} Thomas Bleeker (www.madwizard.org) - MIT license */\n`;
 
@@ -16,7 +16,7 @@ const tsPluginOpts = {
 };
 
 const builds = [
-    {
+  {
     input: './src/index.ts',
     output: {
       file: 'dist/webauthn-ui.js',
@@ -29,18 +29,16 @@ const builds = [
 ];
 
 if (!devMode) {
-  builds.push(
-    {
-      input: './src/index.ts',
-      output: {
-        file: 'dist/webauthn-ui.min.js',
-        format: 'es',
-        banner,
-        sourcemap: devMode,
-      },
-      plugins: [typescript(tsPluginOpts), terser()],
+  builds.push({
+    input: './src/index.ts',
+    output: {
+      file: 'dist/webauthn-ui.min.js',
+      format: 'es',
+      banner,
+      sourcemap: devMode,
     },
-  );
+    plugins: [typescript(tsPluginOpts), terser()],
+  });
 }
 
 export default builds;

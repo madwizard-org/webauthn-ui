@@ -1,66 +1,62 @@
 name: CI
 
-on: ["push", "pull_request"]
-
+on: ['push', 'pull_request']
 
 jobs:
-    lint:
-        runs-on: ubuntu-latest
-        steps:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
 
-            - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
 
-            - uses: pnpm/action-setup@v6
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: pnpm
 
-            - name: Use Node.js 24.x
-              uses: actions/setup-node@v7
-              with:
-                  node-version: 24.x
-                  cache: pnpm
+      - name: pnpm install, lint
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run lint
 
-            - name: pnpm install, lint
-              run: |
-                  pnpm install --frozen-lockfile
-                  pnpm run lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
 
-    test:
-        runs-on: ubuntu-latest
-        steps:
+      - uses: pnpm/action-setup@v6
 
-            - uses: actions/checkout@v7
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: pnpm
 
-            - uses: pnpm/action-setup@v6
+      - name: pnpm install, test-coverage
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test-coverage
 
-            - name: Use Node.js 24.x
-              uses: actions/setup-node@v7
-              with:
-                  node-version: 24.x
-                  cache: pnpm
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
 
-            - name: pnpm install, test-coverage
-              run: |
-                  pnpm install --frozen-lockfile
-                  pnpm run test-coverage
+      - uses: pnpm/action-setup@v6
 
-            - name: Coveralls
-              uses: coverallsapp/github-action@v2
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-    build:
-        runs-on: ubuntu-latest
-        steps:
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: pnpm
 
-            - uses: actions/checkout@v7
-
-            - uses: pnpm/action-setup@v6
-
-            - name: Use Node.js 24.x
-              uses: actions/setup-node@v7
-              with:
-                  node-version: 24.x
-                  cache: pnpm
-
-            - name: pnpm install, build
-              run: |
-                  pnpm install --frozen-lockfile
-                  pnpm run build:prod
+      - name: pnpm install, build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build:prod

@@ -1,20 +1,17 @@
 {
-    "compilerOptions": {
-        "module": "esnext",
-        "target": "es2020",
-        "importHelpers": true,
-        "lib": [
-            "dom",
-            "es2020"
-        ],
-        "types": [],
-        "sourceMap": true,
-        "strict": true,
-        "moduleResolution": "bundler",
-        "declaration": true,
-        "declarationDir": "types",
-        "rootDir": "src",
-        "esModuleInterop": true
-    },
-    "include": ["src"]
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2020",
+    "importHelpers": true,
+    "lib": ["dom", "es2020"],
+    "types": [],
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "declarationDir": "types",
+    "rootDir": "src",
+    "esModuleInterop": true
+  },
+  "include": ["src"]
 }

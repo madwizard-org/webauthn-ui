@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0 
+## 3.0.0
 
 The main goal of this library was conversion between JSON and the WebAuthn structures containing binary data. The WebAuthn API now has native support for this conversion (`PublicKeyCredential.parseCreationOptionsFromJSON()`, `parseRequestOptionsFromJSON()` and `toJSON()`) making this library largely obsolete. Version 3 of this library uses the native functionality instead of its own conversion, but maintains most of the same API for backwards compatibility. You may consider dropping this library and calling the native API yourself instead.
 
@@ -27,9 +27,8 @@ The main goal of this library was conversion between JSON and the WebAuthn struc
 
 ## 2.0.0 (2020-11-29)
 
-Changed automatically initiated WebAuthn ceremonies on page load to trigger on user initiated events (click) instead. This because WebKit has this as a requirement for platform authenticators.   
+Changed automatically initiated WebAuthn ceremonies on page load to trigger on user initiated events (click) instead. This because WebKit has this as a requirement for platform authenticators.
 
 ## 1.0.0 (2020-09-15)
 
 First stable release
-

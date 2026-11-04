@@ -1,4 +1,8 @@
-function waitReadyState(alreadyDone: boolean, eventDispatcher: Window|Document, eventName: string): Promise<void> {
+function waitReadyState(
+  alreadyDone: boolean,
+  eventDispatcher: Window | Document,
+  eventName: string,
+): Promise<void> {
   if (alreadyDone) {
     return Promise.resolve();
   }
@@ -13,7 +17,11 @@ function waitReadyState(alreadyDone: boolean, eventDispatcher: Window|Document, 
 }
 
 export function ready(): Promise<void> {
-  return waitReadyState(document.readyState !== 'loading', document, 'DOMContentLoaded');
+  return waitReadyState(
+    document.readyState !== 'loading',
+    document,
+    'DOMContentLoaded',
+  );
 }
 
 export function loaded(): Promise<void> {

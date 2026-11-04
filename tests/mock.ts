@@ -1,4 +1,4 @@
-import {WebAuthnUI} from '../src';
+import { WebAuthnUI } from '../src';
 
 export class ReadyStateMocker {
   state = 'loading';
@@ -30,34 +30,50 @@ export class ReadyStateMocker {
 
 interface LoadedModule {
   WebAuthnUI: WebAuthnUI;
-  autoSucceeded: boolean|null;
+  autoSucceeded: boolean | null;
   autoPromise: Promise<void>;
 }
 
-export async function importModule() : Promise<LoadedModule> {
+export async function importModule(): Promise<LoadedModule> {
   const module = await import('../src/index');
 
-  const obj : LoadedModule = {
+  const obj: LoadedModule = {
     WebAuthnUI: module.WebAuthnUI,
     autoSucceeded: null,
     autoPromise: module.autoWebAuthn(),
   };
   obj.autoPromise
-      .then(() => { obj.autoSucceeded = true; })
-      .catch(() => { obj.autoSucceeded = false; });
+    .then(() => {
+      obj.autoSucceeded = true;
+    })
+    .catch(() => {
+      obj.autoSucceeded = false;
+    });
   return obj;
 }
 
 type MockCredentialsContainer = Partial<CredentialsContainer>;
 
-export function setCredentials(credentials: MockCredentialsContainer | undefined) {
-  (navigator as unknown as { credentials: MockCredentialsContainer | undefined }).credentials = credentials;
+export function setCredentials(
+  credentials: MockCredentialsContainer | undefined,
+) {
+  (
+    navigator as unknown as {
+      credentials: MockCredentialsContainer | undefined;
+    }
+  ).credentials = credentials;
 }
 
 type MockPublicKeyCredential = Partial<typeof PublicKeyCredential>;
 
-export function setPublicKeyCredential(value: MockPublicKeyCredential | undefined) {
-  (window as unknown as { PublicKeyCredential: MockPublicKeyCredential | undefined }).PublicKeyCredential = value;
+export function setPublicKeyCredential(
+  value: MockPublicKeyCredential | undefined,
+) {
+  (
+    window as unknown as {
+      PublicKeyCredential: MockPublicKeyCredential | undefined;
+    }
+  ).PublicKeyCredential = value;
 }
 
 export function mockWebAuthn() {
@@ -66,10 +82,14 @@ export function mockWebAuthn() {
       return false;
     },
     parseCreationOptionsFromJSON() {
-      return { dummyCreationOptions: true } as unknown as PublicKeyCredentialCreationOptions;
+      return {
+        dummyCreationOptions: true,
+      } as unknown as PublicKeyCredentialCreationOptions;
     },
     parseRequestOptionsFromJSON() {
-      return { dummyRequestOptions: true } as unknown as PublicKeyCredentialRequestOptions;
+      return {
+        dummyRequestOptions: true,
+      } as unknown as PublicKeyCredentialRequestOptions;
     },
   });
 }

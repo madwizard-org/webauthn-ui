@@ -1,13 +1,11 @@
 import { ErrorType } from './error';
 
-interface ClickTrigger
-{
+interface ClickTrigger {
   event: 'click';
-  element: string|HTMLElement;
+  element: string | HTMLElement;
 }
 
-interface LoadTrigger
-{
+interface LoadTrigger {
   event: 'load';
 }
 
@@ -32,16 +30,15 @@ interface RequestConfig extends BaseConfig {
 
 export type Config = CreateConfig | RequestConfig;
 
-export type AutoConfig =
-{
-  formField?: string|HTMLInputElement|HTMLTextAreaElement,
-  postUnsupportedImmediately?: boolean,
+export type AutoConfig = {
+  formField?: string | HTMLInputElement | HTMLTextAreaElement;
+  postUnsupportedImmediately?: boolean;
   submitForm?: boolean;
 } & Config;
 
 export interface SuccessResponse {
   status: 'ok';
-  credential: RegistrationResponseJSON|AuthenticationResponseJSON;
+  credential: RegistrationResponseJSON | AuthenticationResponseJSON;
 }
 
 export interface FailureResponse {
@@ -49,4 +46,4 @@ export interface FailureResponse {
   error: ErrorType;
 }
 
-export type StatusResponse = SuccessResponse|FailureResponse;
+export type StatusResponse = SuccessResponse | FailureResponse;

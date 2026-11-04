@@ -2,7 +2,8 @@ import { loaded, ready } from './ready';
 
 import type {
   AutoConfig,
-  Config, FailureResponse,
+  Config,
+  FailureResponse,
   StatusResponse,
   SuccessResponse,
   Trigger,
@@ -14,10 +15,10 @@ export { WebAuthnError };
 
 export const loadEvents = { loaded, ready };
 
-type ElementList = NodeListOf<HTMLElement>|Element[];
+type ElementList = NodeListOf<HTMLElement> | Element[];
 
-function elementSelector(selector : string|Element): ElementList {
-  let items: NodeListOf<HTMLElement>|Element[];
+function elementSelector(selector: string | Element): ElementList {
+  let items: NodeListOf<HTMLElement> | Element[];
   if (typeof selector === 'string') {
     items = document.querySelectorAll(selector);
   } else {
@@ -27,11 +28,15 @@ function elementSelector(selector : string|Element): ElementList {
 }
 
 export class WebAuthnUI {
-  public static isSupported() : boolean {
-    return typeof window.PublicKeyCredential !== 'undefined' && typeof window.PublicKeyCredential.parseRequestOptionsFromJSON === 'function';
+  public static isSupported(): boolean {
+    return (
+      typeof window.PublicKeyCredential !== 'undefined' &&
+      typeof window.PublicKeyCredential.parseRequestOptionsFromJSON ===
+        'function'
+    );
   }
 
-  public static async isUVPASupported() : Promise<boolean> {
+  public static async isUVPASupported(): Promise<boolean> {
     if (this.isSupported()) {
       return window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
     }
@@ -44,37 +49,49 @@ export class WebAuthnUI {
     }
   }
 
-  public static async createCredential(options: PublicKeyCredentialCreationOptionsJSON): Promise<RegistrationResponseJSON> {
+  public static async createCredential(
+    options: PublicKeyCredentialCreationOptionsJSON,
+  ): Promise<RegistrationResponseJSON> {
     WebAuthnUI.checkSupport();
 
     try {
-      const request : CredentialCreationOptions = {
-        publicKey: window.PublicKeyCredential.parseCreationOptionsFromJSON(options),
+      const request: CredentialCreationOptions = {
+        publicKey:
+          window.PublicKeyCredential.parseCreationOptionsFromJSON(options),
       };
 
-      const credential = await navigator.credentials.create(request) as PublicKeyCredential;
+      const credential = (await navigator.credentials.create(
+        request,
+      )) as PublicKeyCredential;
       return credential.toJSON() as RegistrationResponseJSON;
     } catch (e) {
       throw WebAuthnError.fromError(e);
     }
   }
 
-  public static async getCredential(options: PublicKeyCredentialRequestOptionsJSON): Promise<AuthenticationResponseJSON> {
+  public static async getCredential(
+    options: PublicKeyCredentialRequestOptionsJSON,
+  ): Promise<AuthenticationResponseJSON> {
     WebAuthnUI.checkSupport();
 
     try {
-      const request : CredentialRequestOptions = {
-        publicKey: window.PublicKeyCredential.parseRequestOptionsFromJSON(options),
+      const request: CredentialRequestOptions = {
+        publicKey:
+          window.PublicKeyCredential.parseRequestOptionsFromJSON(options),
       };
 
-      const credential = await navigator.credentials.get(request) as PublicKeyCredential;
+      const credential = (await navigator.credentials.get(
+        request,
+      )) as PublicKeyCredential;
       return credential.toJSON() as AuthenticationResponseJSON;
     } catch (e) {
       throw WebAuthnError.fromError(e);
     }
   }
 
-  public static async setFeatureCssClasses(selector: string|Element): Promise<void> {
+  public static async setFeatureCssClasses(
+    selector: string | Element,
+  ): Promise<void> {
     const items = elementSelector(selector);
     const applyClass = (cls: string) => {
       for (let i = 0; i < items.length; i++) {
@@ -87,7 +104,7 @@ export class WebAuthnUI {
     });
   }
 
-  private static async loadConfig(config : AutoConfig): Promise<StatusResponse> {
+  private static async loadConfig(config: AutoConfig): Promise<StatusResponse> {
     // Wait for DOM ready
     await ready();
     let field = config.formField;
@@ -99,13 +116,21 @@ export class WebAuthnUI {
       field = el as HTMLTextAreaElement | HTMLInputElement;
     }
 
-    if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) {
-      throw new WebAuthnError('bad-config', 'formField does not refer to an input element.');
+    if (!(
+      field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement
+    )) {
+      throw new WebAuthnError(
+        'bad-config',
+        'formField does not refer to an input element.',
+      );
     }
 
     const submit = config.submitForm !== false;
     if (!this.isSupported() && config.postUnsupportedImmediately === true) {
-      const response : FailureResponse = { status: 'failed', error: 'unsupported' };
+      const response: FailureResponse = {
+        status: 'failed',
+        error: 'unsupported',
+      };
       this.setForm(field, response, submit);
       return response;
     }
@@ -147,7 +172,7 @@ export class WebAuthnUI {
     });
   }
 
-  private static getTriggers(config : AutoConfig): Trigger[] {
+  private static getTriggers(config: AutoConfig): Trigger[] {
     const triggers: Trigger[] = [];
     if (config.trigger !== undefined) {
       triggers.push(config.trigger);
@@ -164,21 +189,27 @@ export class WebAuthnUI {
     for (let i = 0; i < triggers.length; i++) {
       const event = triggers[i]?.event;
       if (event !== 'click' && event !== 'load') {
-        throw new WebAuthnError('bad-config', `Invalid trigger event ${String(event)}.`);
+        throw new WebAuthnError(
+          'bad-config',
+          `Invalid trigger event ${String(event)}.`,
+        );
       }
     }
     return triggers;
   }
 
   private static async startConfig(config: Config): Promise<SuccessResponse> {
-    let credential : RegistrationResponseJSON|AuthenticationResponseJSON;
+    let credential: RegistrationResponseJSON | AuthenticationResponseJSON;
 
     if (config.type === 'get') {
       credential = await this.getCredential(config.request);
     } else if (config.type === 'create') {
       credential = await this.createCredential(config.request);
     } else {
-      throw new WebAuthnError('bad-config', `Invalid config.type ${(config as Config).type}`);
+      throw new WebAuthnError(
+        'bad-config',
+        `Invalid config.type ${(config as Config).type}`,
+      );
     }
 
     return {
@@ -187,29 +218,35 @@ export class WebAuthnUI {
     };
   }
 
-  private static async runAutoConfig(config : AutoConfig): Promise<StatusResponse> {
-    let response : StatusResponse;
+  private static async runAutoConfig(
+    config: AutoConfig,
+  ): Promise<StatusResponse> {
+    let response: StatusResponse;
 
     try {
       response = await this.startConfig(config);
     } catch (e) {
-      const waError = (e instanceof WebAuthnError);
+      const waError = e instanceof WebAuthnError;
       if (config.debug === true) {
-        console.error(e);// eslint-disable-line no-console
+        console.error(e); // eslint-disable-line no-console
         if (waError && e.innerError) {
-          console.error(e.innerError);// eslint-disable-line no-console
+          console.error(e.innerError); // eslint-disable-line no-console
         }
       }
       response = {
         status: 'failed',
-        error: (waError ? e.name : WebAuthnError.fromError(e).name),
+        error: waError ? e.name : WebAuthnError.fromError(e).name,
       };
     }
 
     return response;
   }
 
-  private static setForm(field: HTMLTextAreaElement|HTMLInputElement, response : StatusResponse, submit: boolean): void {
+  private static setForm(
+    field: HTMLTextAreaElement | HTMLInputElement,
+    response: StatusResponse,
+    submit: boolean,
+  ): void {
     field.value = JSON.stringify(response);
     if (submit && field.form) {
       field.form.submit();
@@ -218,22 +255,32 @@ export class WebAuthnUI {
 
   public static async autoConfig(): Promise<void> {
     const promises: Promise<StatusResponse>[] = [];
-    const list = document.querySelectorAll('input[data-webauthn],textarea[data-webauthn],script[data-webauthn]');
+    const list = document.querySelectorAll(
+      'input[data-webauthn],textarea[data-webauthn],script[data-webauthn]',
+    );
     for (let i = 0; i < list.length; i++) {
       const el = list[i];
       const isScript = el.tagName === 'SCRIPT';
       if (isScript && (el as HTMLScriptElement).type !== 'application/json') {
-        throw new WebAuthnError('bad-config', 'Expecting application/json script with data-webauthn');
+        throw new WebAuthnError(
+          'bad-config',
+          'Expecting application/json script with data-webauthn',
+        );
       }
-      const rawJson: string | null = isScript ? el.textContent : (el).getAttribute('data-webauthn');
+      const rawJson: string | null = isScript
+        ? el.textContent
+        : el.getAttribute('data-webauthn');
       if (rawJson === null) {
         throw new WebAuthnError('bad-config', 'Missing JSON in data-webauthn');
       }
-      let json : AutoConfig;
+      let json: AutoConfig;
       try {
         json = JSON.parse(rawJson) as AutoConfig;
       } catch {
-        throw new WebAuthnError('bad-config', 'invalid JSON in data-webauthn on element');
+        throw new WebAuthnError(
+          'bad-config',
+          'invalid JSON in data-webauthn on element',
+        );
       }
       if (!isScript && json.formField === undefined) {
         json.formField = el as HTMLInputElement | HTMLTextAreaElement;
@@ -245,7 +292,7 @@ export class WebAuthnUI {
   }
 }
 
-export async function autoWebAuthn() : Promise<void> {
+export async function autoWebAuthn(): Promise<void> {
   await ready();
   const list = document.querySelectorAll('.webauthn-detect');
   for (let i = 0; i < list.length; i++) {
